@@ -8,7 +8,7 @@ const pool = mysql.createPool({
   queueLimit: 0,
 });
 
-// const promisePool = pool.promise();
+const promisePool = pool.promise();
 // const queryDB = async (sql, params) => {
 //   const connection = await promisePool.getConnection();
 //   try {

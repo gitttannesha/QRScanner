@@ -60,6 +60,14 @@ const ScannerScreen = ({ navigation }) => {
         Alert.alert("Not Found", "This chemical ID does not exist in our database.");
         setScanned(false); 
       }
+
+//       if (dataJson.success) {
+//   // If your backend returns an array like [ {id: 224, name: '...'} ]
+//   // grab the first element [0]
+//  // const chemicalData = Array.isArray(dataJson.data) ? dataJson.data[0] : dataJson.data;
+//   const chemicalData = dataJson.data[0];
+//   navigation.navigate("ChemicalDetails", { chemical: chemicalData });
+// }
     } catch (err) {
       console.log("API Error:", err);
       Alert.alert("Error", "Could not connect to the server. Check your IP and connection.");

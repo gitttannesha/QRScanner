@@ -6,7 +6,25 @@ import { API_BASE_URL } from '../config/api';
 // Remove this if you have it: import { AsyncStorage } from 'react-native';
 // Add this:
 const ChemicalDetails = ({ route, navigation }) => {
-  const { chemical } = route.params; // This is the 'dataJson.data' you sent
+  const { chemical } = route.params; 
+
+
+  if (!chemical) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.content}>
+          <Text style={styles.header}>No Data Found</Text>
+          <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+            <Text style={styles.backBtnText}>BACK TO SCANNER</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+
+
+
   const [amount, setAmount] = useState("");
   const [isUpdating, setIsUpdating] = useState(false);
 const handleAddStock = async () => {
@@ -47,6 +65,8 @@ const handleAddStock = async () => {
             <View key={key} style={styles.detailRow}>
               <Text style={styles.label}>{key.toUpperCase()}</Text>
               <Text style={styles.value}>{value || "N/A"}</Text>
+              {/* <Text style={styles.label}>{key.replace(/_/g, ' ')}</Text>
+              <Text style={styles.value}>{String(value ?? "N/A")}</Text> */}
             </View>
           ))}
         </View>
