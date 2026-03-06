@@ -20,7 +20,7 @@ app.post("/login", async (req, res) => {
   const sql = "SELECT memberid, email, fname, lname, is_admin FROM qr_scanner.login WHERE email=? AND password=?";
 
   try {
-    const [result] = await db.queryDB(sql, [email, hashedPassword]);
+    const result = await db.queryDB(sql, [email, hashedPassword]);
 
     if (result.length === 0) {
       return res.status(401).json({ success: false, message: "Invalid credentials" });
@@ -54,17 +54,18 @@ app.post("/login", async (req, res) => {
 // ROUTE 1: Add to existing stock (Mathematics: +)
 app.post('/api/add-stock', async (req, res) => {
     const { chemical_id, amount_to_add } = req.body;
-
+      console.log("Received:", chemical_id, amount_to_add);
     try {
         const sql = "UPDATE bulk_chemicals.bulk_chemical SET stock = stock + ? WHERE chemical_id = ?";
-        const result = await queryDB(sql, [amount_to_add, chemical_id]);
-
+        const result = await db.queryDB(sql, [amount_to_add, chemical_id]);
+        console.log("Result:", result);
         if (result.affectedRows > 0) {
             res.status(200).json({ success: true, message: "Stock incremented!" });
         } else {
             res.status(404).json({ success: false, message: "Chemical ID not found." });
         }
     } catch (error) {
+        console.error("ADD STOCK ERROR:", error.message);
         res.status(500).json({ success: false, error: error.message });
     }
 });
@@ -75,8 +76,13 @@ app.post('/api/update-stock', async (req, res) => {
 
     try {
         const sql = "UPDATE bulk_chemicals.bulk_chemical SET stock = ? WHERE chemical_id = ?";
-        const result = await queryDB(sql, [new_total, chemical_id]);
+        const result = await db.queryDB(sql, [new_total, chemical_id]);
 
+         if (result.affectedRows > 0) {
+            res.status(200).json({ success: true, message: "Stock total updated!" });
+        } else {
+            res.status(404).json({ success: false, message: "Chemical ID not found." });
+        }
         res.status(200).json({ success: true, message: "Stock total updated!" });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
@@ -94,7 +100,7 @@ app.get("/chemical/:id", async (req, res) => {
 
   try {
     // FIX: Add the brackets [ ] around 'rows' to catch the first part of the result
-    const [rows] = await db.queryDB(sql, [id]);
+    const rows = await db.queryDB(sql, [id]);
     if (!rows || rows.length === 0) {
       return res.json({ 
         success: false, 

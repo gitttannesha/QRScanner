@@ -1,32 +1,14 @@
 import axios from 'axios';
 import { useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { API_BASE_URL } from '../config/api';
 // Remove this if you have it: import { AsyncStorage } from 'react-native';
 // Add this:
 const ChemicalDetails = ({ route, navigation }) => {
-  const { chemical } = route.params; 
-
-
-  if (!chemical) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.content}>
-          <Text style={styles.header}>No Data Found</Text>
-          <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-            <Text style={styles.backBtnText}>BACK TO SCANNER</Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-
-
-
-  const [amount, setAmount] = useState("");
-  const [isUpdating, setIsUpdating] = useState(false);
+const { chemical } = route.params; 
+const [amount, setAmount] = useState("");
+const [isUpdating, setIsUpdating] = useState(false);
 const handleAddStock = async () => {
   // 1. Validation: Don't send if amount is empty or 0
   if (!amount || parseInt(amount) <= 0) {
@@ -63,10 +45,10 @@ const handleAddStock = async () => {
         <View style={styles.card}>
           {Object.entries(chemical).map(([key, value]) => (
             <View key={key} style={styles.detailRow}>
-              <Text style={styles.label}>{key.toUpperCase()}</Text>
-              <Text style={styles.value}>{value || "N/A"}</Text>
-              {/* <Text style={styles.label}>{key.replace(/_/g, ' ')}</Text>
-              <Text style={styles.value}>{String(value ?? "N/A")}</Text> */}
+              {/* <Text style={styles.label}>{key.toUpperCase()}</Text>
+              <Text style={styles.value}>{value || "N/A"}</Text> */}
+              <Text style={styles.label}>{key.replace(/_/g, ' ')}</Text>
+              <Text style={styles.value}>{String(value ?? "N/A")}</Text>
             </View>
           ))}
         </View>
@@ -82,17 +64,18 @@ const handleAddStock = async () => {
             onChangeText={setAmount}
           />
           <TouchableOpacity 
-            style={styles.addBtn} 
-            onPress={handleAddStock}>
-            <Text style={styles.addBtnText}>+ ADD TO STOCK</Text>
+            style={[styles.addBtn ,isUpdating && { opacity: 0.5 }]} 
+            onPress={handleAddStock}
+            disabled={isUpdating}>
+            <Text style={styles.addBtnText}>{isUpdating ? "Adding..." : "+ ADD TO STOCK"}</Text>
           </TouchableOpacity>
         </View>
 
         <TouchableOpacity 
           style={styles.backBtn} 
-          onPress={() => navigation.goBack()}
+          onPress={() => navigation.navigate("Dashboard")}
         >
-          <Text style={styles.backBtnText}>BACK TO SCANNER</Text>
+          <Text style={styles.backBtnText}>BACK TO DASHBOARD</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>

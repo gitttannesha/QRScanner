@@ -61,13 +61,6 @@ const ScannerScreen = ({ navigation }) => {
         setScanned(false); 
       }
 
-//       if (dataJson.success) {
-//   // If your backend returns an array like [ {id: 224, name: '...'} ]
-//   // grab the first element [0]
-//  // const chemicalData = Array.isArray(dataJson.data) ? dataJson.data[0] : dataJson.data;
-//   const chemicalData = dataJson.data[0];
-//   navigation.navigate("ChemicalDetails", { chemical: chemicalData });
-// }
     } catch (err) {
       console.log("API Error:", err);
       Alert.alert("Error", "Could not connect to the server. Check your IP and connection.");
@@ -85,21 +78,6 @@ const ScannerScreen = ({ navigation }) => {
         }}
       />
 
-      {chemical && (
-        <View style={styles.infoBox}>
-          <Text style={styles.text}>{chemical.chemical_name}</Text>
-          <Text style={styles.text}>Unit: {chemical.unit_measure}</Text>
-          <Text style={styles.text}>Type: {chemical.type}</Text>
-          <Text style={styles.text}>Supplier: {chemical.supplier_local}</Text>
-          
-          <TouchableOpacity 
-            onPress={() => { setScanned(false); setChemical(null); }}
-            style={styles.scanNextBtn}
-          >
-            <Text style={{color: 'white', textAlign: 'center'}}>Scan Next</Text>
-          </TouchableOpacity>
-        </View>
-      )}
     </View>
   );
 };

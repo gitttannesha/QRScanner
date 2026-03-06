@@ -2,7 +2,9 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator } from 'react-native';
+import AddStock from './src/Screens/AddStock';
 import ChemicalDetails from './src/Screens/ChemicalDetails';
+import CurrentStock from './src/Screens/CurrentStock';
 import Dashboard from './src/Screens/Dashboard';
 import LoginScreen from './src/Screens/Login';
 import ScannerScreen from './src/Screens/Scanner';
@@ -42,6 +44,8 @@ export default function App() {
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="Scanner" component={ScannerScreen} />
           <Stack.Screen name = "ChemicalDetails" component= {ChemicalDetails}/>
+          <Stack.Screen name="CurrentStock" component={CurrentStock} />
+<Stack.Screen name="AddStock" component={AddStock} />
       </Stack.Navigator>
     </NavigationContainer>
   );
