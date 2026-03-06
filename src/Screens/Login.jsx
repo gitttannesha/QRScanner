@@ -5,12 +5,11 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
-  StyleSheet,
+  Alert, Platform, StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { API_BASE_URL } from '../config/api';
@@ -51,13 +50,14 @@ const LoginScreen = () => {
       const res = await axios.post(`${API_BASE_URL}/login`, {
         email: email,
         password: password,
+        device: Platform.OS 
       });
 
       if (res.data.success) {
         // Store both token and user data for convenience
         await AsyncStorage.setItem("token", res.data.token);
         navigation.replace("Dashboard");
-        //await AsyncStorage.setItem("userData", JSON.stringify(res.data.user));
+        await AsyncStorage.setItem("userData", JSON.stringify(res.data.user));
         
         Alert.alert("Login Success");
         navigation.replace("Dashboard");
