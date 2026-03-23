@@ -1,11 +1,11 @@
+
 import { Feather as Icon, MaterialIcons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
-  Alert, Platform, StyleSheet,
+  Alert, Platform, StatusBar, StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
@@ -13,26 +13,26 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { API_BASE_URL } from '../config/api';
+import Header from "./Header";
 
 const LoginScreen = () => {
   const navigation = useNavigation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [secureText, setSecureText] = useState(true);
-  const [loading, setLoading] = useState(true); // New: Prevents login flash
+  const [loading, setLoading] = useState(true);
 
-  // Check login on startup
   const checkLogin = async () => {
     try {
       const token = await AsyncStorage.getItem("token");
       if (token) {
         console.log("TOKEN found, redirecting...");
-        navigation.replace("Dashboard"); 
+        navigation.replace("Dashboard");
       }
     } catch (e) {
       console.log("Error reading token", e);
     } finally {
-      setLoading(false); // Stop loading regardless of token presence
+      setLoading(false);
     }
   };
 
@@ -45,81 +45,76 @@ const LoginScreen = () => {
       Alert.alert("Error", "Enter email & password");
       return;
     }
-
     try {
       const res = await axios.post(`${API_BASE_URL}/login`, {
         email: email,
         password: password,
-        device: Platform.OS 
+        device: Platform.OS
       });
-
       if (res.data.success) {
-        // Store both token and user data for convenience
         await AsyncStorage.setItem("token", res.data.token);
-        navigation.replace("Dashboard");
         await AsyncStorage.setItem("userData", JSON.stringify(res.data.user));
-        
         Alert.alert("Login Success");
         navigation.replace("Dashboard");
-      } else {
-        Alert.alert("Invalid credentials");
       }
     } catch (error) {
-      console.log(error);
-      Alert.alert("Login Failed", "Check your server connection");
+      if (error.response && error.response.data && error.response.data.message) {
+        Alert.alert("Login Failed", error.response.data.message);
+      } else {
+        Alert.alert("Login Failed", "Check your server connection");
+      }
     }
   };
 
-  // If we are still checking for a token, show a loading spinner
-  if (loading) {
-    return (
-      <View style={[styles.container, { justifyContent: 'center' }]}>
-        <ActivityIndicator size="large" color="#F2A65A" />
-      </View>
-    );
-  }
-
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.card}>
-        <Text style={styles.title}>QR INVENTORY APP</Text>
+    <View style={{ flex: 1 }}>
+      <StatusBar barStyle="light-content" backgroundColor="#1A3C6E" />
 
-        <View style={styles.qrContainer}>
-          <MaterialIcons name="qr-code-scanner" size={60} color="#333" />
-        </View>
+      {/* ── Header added (logo only, no person icon) ── */}
+      <Header showProfile={false} />
 
-        <View style={styles.inputContainer}>
-          <Icon name="mail" size={20} color="#555" style={styles.leftIcon} />
-          <TextInput
-            placeholder="Email"
-            placeholderTextColor="#555"
-            style={styles.input}
-            value={email}
-            onChangeText={setEmail}
-            autoCapitalize="none"
-          />
-        </View>
+      {/* ── Everything below is exactly the same as before ── */}
+      <SafeAreaView style={styles.container}>
+        <View style={styles.card}>
+          <Text style={styles.title}>QR INVENTORY APP</Text>
 
-        <View style={styles.inputContainer}>
-          <Icon name="lock" size={20} color="#555" style={styles.leftIcon} />
-          <TextInput
-            placeholder="Password"
-            placeholderTextColor="#555"
-            style={styles.input}
-            secureTextEntry={secureText}
-            value={password}
-            onChangeText={setPassword}
-          />
-          <TouchableOpacity onPress={() => setSecureText(!secureText)}>
-            <Icon name={secureText ? "eye-off" : "eye"} size={20} color="#555" />
+          <View style={styles.qrContainer}>
+            <MaterialIcons name="qr-code-scanner" size={60} color="#333" />
+          </View>
+
+          <View style={styles.inputContainer}>
+            <Icon name="mail" size={20} color="#555" style={styles.leftIcon} />
+            <TextInput
+              placeholder="Email"
+              placeholderTextColor="#555"
+              style={styles.input}
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+            />
+          </View>
+
+          <View style={styles.inputContainer}>
+            <Icon name="lock" size={20} color="#555" style={styles.leftIcon} />
+            <TextInput
+              placeholder="Password"
+              placeholderTextColor="#555"
+              style={styles.input}
+              secureTextEntry={secureText}
+              value={password}
+              onChangeText={setPassword}
+            />
+            <TouchableOpacity onPress={() => setSecureText(!secureText)}>
+              <Icon name={secureText ? "eye-off" : "eye"} size={20} color="#555" />
+            </TouchableOpacity>
+          </View>
+
+          <TouchableOpacity style={styles.loginBtn} onPress={handleLogin}>
+            <Text style={styles.loginText}>Login</Text>
           </TouchableOpacity>
         </View>
-
-        <TouchableOpacity style={styles.loginBtn} onPress={handleLogin}>
-          <Text style={styles.loginText}>Login</Text>
-        </TouchableOpacity>
-      </View>
-    </SafeAreaView>
+      </SafeAreaView>
+    </View>
   );
 };
 
@@ -134,7 +129,7 @@ const styles = StyleSheet.create({
   },
   card: {
     width: "80%",
-    backgroundColor: "#F2A65A",
+    backgroundColor: "#FFD786",
     padding: 25,
     borderRadius: 10,
     alignItems: "center",
@@ -182,4 +177,4 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#000",
   },
-});``
+});
