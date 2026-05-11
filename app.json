@@ -2,6 +2,7 @@
   "expo": {
     "name": "QRScanner",
     "slug": "QRScanner",
+    "owner": "ui22cs08",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./src/assets/icon.png",
@@ -54,7 +55,7 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "2ccb26cd-f52e-45db-862e-65eeb1a3b4ed"
+        "projectId": "84378422-8b94-4550-8a08-151fef4d5833"
       }
     }
   }
