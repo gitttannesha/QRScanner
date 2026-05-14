@@ -1,16 +1,16 @@
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
-import Header from './Header';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { getRequest } from "../services/authservice";
+import Header from './Header';
 const BLUE = "#2f5081";
 const DARK_BLUE = "#1e3557";
 
@@ -65,6 +65,7 @@ const IssuedItemsScreen = ({ navigation }) => {
   ).filter(t => t.quantity > 0);
 
   return (
+     
     <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="light-content" backgroundColor={DARK_BLUE} />
       <Header showProfile={true}   userName={userName}/>
@@ -142,6 +143,7 @@ const IssuedItemsScreen = ({ navigation }) => {
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
+    
   );
 };
 
@@ -168,11 +170,7 @@ const styles = StyleSheet.create({
   userName: { fontSize: 16, fontWeight: "700", color: "#3C3489", marginBottom: 2 },
   userRole: { fontSize: 12, color: "#3C3489", marginBottom: 2 },
   userEmail: { fontSize: 11, color: "#3C3489", marginBottom: 8 },
-  sessionBadge: { flexDirection: "row", alignItems: "center", gap: 5,
-    backgroundColor: "rgba(255,255,255,0.12)", borderRadius: 20,
-    paddingHorizontal: 10, paddingVertical: 4, alignSelf: "flex-start" },
-  sessionIcon: { fontSize: 11, color: "#FFD166" },
-  sessionText: { fontSize: 10, color: "#e8eef8" },
+ 
 
   section: { backgroundColor: "#fff", marginHorizontal: 16, marginTop: 16,
     borderRadius: 14, borderWidth: 0.5, borderColor: "#e0e6f0", elevation: 2, overflow: "hidden" },

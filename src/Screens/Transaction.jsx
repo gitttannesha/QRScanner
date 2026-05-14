@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -9,8 +8,9 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import Header from './Header';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { getRequest } from "../services/authservice";
+import Header from './Header';
 const BLUE = "#2f5081";
 const DARK_BLUE = "#1e3557";
 

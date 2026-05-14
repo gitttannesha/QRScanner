@@ -1,4 +1,3 @@
-import { clearStorage, getUser } from '../utilis/storage';
 import { useNavigation } from "@react-navigation/native";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -9,10 +8,10 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  TouchableWithoutFeedback,
   View
 } from "react-native";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { clearStorage, getUser } from '../utilis/storage';
 import Header from "./Header";
 
 const Dashboard = () => {
@@ -71,30 +70,6 @@ const Dashboard = () => {
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#2f5081" />
       <Header showProfile = {true} userName= {userName} userRole={userRole}/>       
-
-     {/* 
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <Image
-            source={require("../assets/IITB_logo.png")}
-            style={styles.headerLogo}
-          />
-          <View style={styles.headerTitleBlock}>
-            <Text style={styles.headerTitle}>IIT Bombay</Text>
-            <Text style={styles.headerSubtitle}>NanoFabrication Laboratory</Text>
-          </View>
-        </View>
-
-       
-        <TouchableOpacity style={styles.avatarBtn} onPress={() => navigation.navigate('Profile')}>
-         
-          <View style={styles.personIcon}>
-            <View style={styles.personHead} />
-            <View style={styles.personBody} />
-          </View>
-        </TouchableOpacity>
-      </View>
-     */} 
    
 
       {/* ── Body ── */}
@@ -115,7 +90,7 @@ const Dashboard = () => {
         </TouchableOpacity>
       </View>
 
-      <View style={[styles.footer , { bottom: insets.bottom + 10 }]}>
+      <View style={[styles.footer , { bottom: insets.bottom + 30 }]}>
       <Text style={styles.versionText}>IITBNF Inventory App • v2.0.0</Text>
         <TouchableOpacity onPress={() => Linking.openURL('https://www.iitbnf.iitb.ac.in/iitbnf/it-team/it-team.php')}>
         <Text style={styles.linkText}>IITBNF</Text>
@@ -139,153 +114,7 @@ const styles = StyleSheet.create({
     backgroundColor: BG,
   },
 
-  /* ── Header ── */
-  header: {
-    backgroundColor: NAVY,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingTop: 30,
-    paddingBottom: 10,
-    elevation: 6,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-  },
-  headerLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-  },
-  headerLogo: {
-    width: 60,
-    height: 60,
-    resizeMode: "contain",
-  },
-  headerTitleBlock: {
-    justifyContent: "center",
-  },
-  headerTitle: {
-    color: AMBER,
-    fontSize: 20,
-    fontWeight: "800",
-    letterSpacing: 2,
-  },
-  headerSubtitle: {
-    color: "#C8D8F0",
-    fontSize: 13,
-    fontWeight: "400",
-    letterSpacing: 0.5,
-  },
-  avatarBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "rgba(255,255,255,0.12)",
-    borderRadius: 20,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    gap: 6,
-  },
-  personIcon: {
-    width: 22,
-    height: 22,
-    alignItems: "center",
-  },
-  personHead: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: WHITE,
-    marginBottom: 2,
-  },
-  personBody: {
-    width: 16,
-    height: 8,
-    borderTopLeftRadius: 8,
-    borderTopRightRadius: 8,
-    backgroundColor: WHITE,
-  },
-  chevron: {
-    color: WHITE,
-    fontSize: 9,
-    marginTop: 1,
-  },
-
-  /* ── Dropdown ── */
-  modalOverlay: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 100,
-  },
-  dropdown: {
-    position: "absolute",
-    top: 108,
-    right: 16,
-    backgroundColor: WHITE,
-    borderRadius: 14,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    minWidth: 200,
-    elevation: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.18,
-    shadowRadius: 8,
-    zIndex: 101,
-  },
-  dropdownUserRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    marginBottom: 10,
-  },
-  dropdownAvatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: NAVY,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  dropdownAvatarText: {
-    color: WHITE,
-    fontWeight: "700",
-    fontSize: 16,
-  },
-  dropdownName: {
-    fontWeight: "700",
-    fontSize: 14,
-    color: "#1A1A2E",
-  },
-  dropdownRole: {
-    fontSize: 11,
-    color: "#888",
-  },
-  dropdownDivider: {
-    height: 1,
-    backgroundColor: "#EFEFEF",
-    marginBottom: 8,
-  },
-  dropdownItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    paddingVertical: 6,
-  },
-  dropdownIcon: {
-    fontSize: 18,
-    color: "#C0392B",
-  },
-  dropdownLogoutText: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: "#C0392B",
-  },
+ 
 
   /* ── Body ── */
   body: {

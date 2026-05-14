@@ -1,5 +1,4 @@
 import { Feather as Icon, MaterialIcons } from "@expo/vector-icons";
-import { clearStorage, getToken, saveToken, saveUser } from "../utilis/storage";
 import { useNavigation } from "@react-navigation/native";
 import { useEffect, useState } from "react";
 import {
@@ -13,8 +12,9 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
-import { getRequest, postRequest } from '../services/authservice';
 import { SafeAreaView } from "react-native-safe-area-context";
+import { getRequest, postRequest } from '../services/authservice';
+import { clearStorage, getToken, saveToken, saveUser } from "../utilis/storage";
 import Header from "./Header";
 
 const LoginScreen = () => {
@@ -79,13 +79,7 @@ const LoginScreen = () => {
   }
 }
 
-// catch (error) {
-  //    if (error.response && error.response.data && error.response.data.message) {
-    //    Alert.alert("Login Failed", error.response.data.message);
-     // } else {
-       // Alert.alert("Login Failed", "Check your server connection");
-      //}
-   // }
+
   };
 
   return (
@@ -93,6 +87,7 @@ const LoginScreen = () => {
       style={{ flex: 1 }}
       behavior="padding"
       keyboardVerticalOffset={0}
+      
     >
       <StatusBar barStyle="light-content" backgroundColor="#1A3C6E" />
 

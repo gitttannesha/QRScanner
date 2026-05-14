@@ -416,7 +416,7 @@ const fetchPendingStock = async (member) => {
     onPress={() => { setActiveTab("addstock"); resetForm(); }}
   >
     <Text style={[styles.toggleText, activeTab === "addstock" && styles.toggleTextActive]}>
-      + Add Stock
+       Add Stock
     </Text>
   </TouchableOpacity>
   <TouchableOpacity
@@ -424,7 +424,7 @@ const fetchPendingStock = async (member) => {
     onPress={() => { setActiveTab("issue"); resetForm(); }}
   >
     <Text style={[styles.toggleText, activeTab === "issue" && styles.toggleTextActive]}>
-      ↗ Issue
+       Issue
     </Text>
   </TouchableOpacity>
   {isReusable && (
@@ -433,7 +433,7 @@ const fetchPendingStock = async (member) => {
       onPress={() => { setActiveTab("return"); resetForm(); }}
     >
       <Text style={[styles.toggleText, activeTab === "return" && styles.toggleTextActive]}>
-        ↩ Return
+         Return
       </Text>
     </TouchableOpacity>
   )}
@@ -447,6 +447,7 @@ const fetchPendingStock = async (member) => {
                 <TextInput
                   style={styles.input}
                   placeholder="Enter quantity"
+                  placeholderTextColor="#000"
                   keyboardType="numeric"
                   value={amount}
                   onChangeText={setAmount}
@@ -454,6 +455,7 @@ const fetchPendingStock = async (member) => {
                 <TextInput
                   style={styles.input}
                   placeholder="Comment"
+                  placeholderTextColor="#000"
                   value={comment}
                   onChangeText={setComment}
                 />
@@ -473,6 +475,7 @@ const fetchPendingStock = async (member) => {
     <TextInput
       style={styles.input}
       placeholder="Enter quantity"
+      placeholderTextColor="#000"
       keyboardType="numeric"
       value={amount}
       onChangeText={setAmount}
@@ -498,6 +501,7 @@ const fetchPendingStock = async (member) => {
     <TextInput
       style={styles.input}
       placeholder="Comment"
+      placeholderTextColor="#000"
       value={comment}
       onChangeText={setComment}
     />
@@ -530,6 +534,7 @@ const fetchPendingStock = async (member) => {
     <TextInput
       style={styles.input}
       placeholder="Enter quantity"
+      placeholderTextColor="#000"
       keyboardType="numeric"
       value={amount}
       onChangeText={setAmount}
@@ -548,13 +553,14 @@ const fetchPendingStock = async (member) => {
       onPress={() => setShowLocationModal(true)}
     >
       <Text style={selectedLocation ? styles.dropdownSelected : styles.dropdownPlaceholder}>
-        {loadingLabs ? "Loading labs..." : selectedLocation ? selectedLocation.label : "Select lab location"}
+        {loadingLabs ? "Loading labs..." : selectedLocation ? selectedLocation.label : "Select lab location(optional)"}
       </Text>
       <Text style={styles.dropdownArrow}>▼</Text>
     </TouchableOpacity>
     <TextInput
       style={styles.input}
       placeholder="Comment"
+      placeholderTextColor="#000"
       value={comment}
       onChangeText={setComment}
     />
@@ -604,6 +610,7 @@ const fetchPendingStock = async (member) => {
               <TextInput
                 style={styles.searchInput}
                 placeholder="Search by name..."
+                placeholderTextColor="#000"
                 value={memberSearch}
                 onChangeText={handleMemberSearch}
                 autoFocus
@@ -744,9 +751,9 @@ const styles = StyleSheet.create({
 
   // Dropdown
   dropdown:            { backgroundColor: '#fff', borderRadius: 8, padding: 12, marginBottom: 10, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  dropdownPlaceholder: { color: '#aaa', fontSize: 14 },
+  dropdownPlaceholder: { color: '#000', fontSize: 14 },
   dropdownSelected:    { color: '#000', fontSize: 14, flex: 1, marginRight: 8 },
-  dropdownArrow:       { color: '#555', fontSize: 12 },
+  dropdownArrow:       { color: '#000', fontSize: 12 },
 
   // Buttons
   buttonRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 8, marginTop: 4 },

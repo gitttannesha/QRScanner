@@ -1,15 +1,15 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
-  View,
   TouchableOpacity,
+  View,
 } from "react-native";
-import Header from "./Header";
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { getRequest } from "../services/authservice";
+import Header from "./Header";
 const BLUE = "#2f5081";
 const AddStockScreen = ({ navigation }) => {
   const [user, setUser] = useState(null);
@@ -79,12 +79,6 @@ const AddStockScreen = ({ navigation }) => {
               <Text style={styles.userName}>{fullName}</Text>
               <Text style={styles.userRole}>{user.position}</Text>
               <Text style={styles.userEmail}>{user.email}</Text>
-              {sessionExpiry && (
-                <View style={styles.sessionBadge}>
-                  <Text style={styles.sessionIcon}>🕐</Text>
-                  <Text style={styles.sessionText}>Session expires: {sessionExpiry}</Text>
-                </View>
-              )}
             </View>
           </View>
         )}
@@ -137,7 +131,7 @@ const AddStockScreen = ({ navigation }) => {
         <View style={{ height: 32 }} />
         
         <TouchableOpacity
-          style={[styles.backBtn , { marginBottom: 20 }]}
+          style={[styles.backBtn , { marginBottom: 70 }]}
           onPress={() => navigation.navigate("Dashboard")}>
           <Text style={styles.backBtnText}>← GO BACK</Text>
         </TouchableOpacity>

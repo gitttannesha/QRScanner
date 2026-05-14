@@ -19,7 +19,7 @@ const SparePartDetails = ({ route, navigation }) => {
   const [memberId, setMemberId]                   = useState(null);
   const [hasPermission, setHasPermission]         = useState(false);
   const [permissionLoading, setPermissionLoading] = useState(true);
-  const [activeTab, setActiveTab]                 = useState(sparePart.type_of_spare === "bulk-spare-part" ? "status" : "addstock");
+  const [activeTab, setActiveTab]                 = useState(sparePart.type_of_spare === "bulk-spare-part" ? "addstock" : "status");
   const [isUpdating, setIsUpdating]               = useState(false);
   const insets = useSafeAreaInsets();
   const [userName, setUserName] = useState("User"); 
@@ -27,6 +27,7 @@ const SparePartDetails = ({ route, navigation }) => {
   // ── Add Stock ──
   const [addAmount, setAddAmount]   = useState("");
   const [addComment, setAddComment] = useState("");
+
 
   // ── Issue ──
   const [issueAmount, setIssueAmount]             = useState("");
@@ -245,20 +246,31 @@ const SparePartDetails = ({ route, navigation }) => {
         Alert.alert("Failed", response.data.message || "Could not update status.");
       }
     } catch (error) {
-      console.error("Update status error:", error.message);
-      Alert.alert("Error", "Could not connect to the database.");
+      const message = error.response?.data?.message || "Could not connect to the database.";
+      Alert.alert("Failed", message);
     } finally {
       setIsUpdating(false);
     }
   };
 
 
+
+
+
+
 const formatDate = (dateStr) => {
   if (!dateStr) return "N/A";
+
   const date = new Date(dateStr);
-  const dd = String(date.getDate()).padStart(2, '0');
-  const mm = String(date.getMonth() + 1).padStart(2, '0');
+
+  if (isNaN(date.getTime()) || date.getFullYear() < 1900) {
+    return "N/A";
+  }
+
+  const dd = String(date.getDate()).padStart(2, "0");
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
   const yyyy = date.getFullYear();
+
   return `${dd}/${mm}/${yyyy}`;
 };
 
@@ -345,14 +357,14 @@ const formatDate = (dateStr) => {
 
             {/* ── Toggle ── */}
             <View style={styles.toggleRow}>
-              {sparePart.type_of_spare !== "bulk-spare-part" && (
+              {sparePart.type_of_spare === "bulk-spare-part" && (
                <>
                  <TouchableOpacity
                    style={[styles.toggleBtn, activeTab === "addstock" && styles.toggleBtnActive]}
                    onPress={() => { setActiveTab("addstock"); resetForm(); }}
                  >
                   <Text style={[styles.toggleText, activeTab === "addstock" && styles.toggleTextActive]}>
-                + Add Stock
+                Add Stock
                  </Text>
               </TouchableOpacity>
 
@@ -361,7 +373,7 @@ const formatDate = (dateStr) => {
                 onPress={() => { setActiveTab("issue"); resetForm(); }}
                >
               <Text style={[styles.toggleText, activeTab === "issue" && styles.toggleTextActive]}>
-               ⬇ Issue
+                Issue
              </Text>
            </TouchableOpacity>
           </>
@@ -371,11 +383,12 @@ const formatDate = (dateStr) => {
             </View>
 
             {/* ── Add Stock Tab ── */}
-            {sparePart.type_of_spare !== "bulk-spare-part" && activeTab === "addstock" && (
+            {sparePart.type_of_spare === "bulk-spare-part" && activeTab === "addstock" && (
               <>
                 <TextInput
                   style={styles.input}
                   placeholder="Enter quantity"
+                  placeholderTextColor="#000"
                   keyboardType="numeric"
                   value={addAmount}
                   onChangeText={handleAddAmountChange}
@@ -383,6 +396,7 @@ const formatDate = (dateStr) => {
                 <TextInput
                   style={styles.input}
                   placeholder="Comment (optional)"
+                  placeholderTextColor="#000"
                   value={addComment}
                   onChangeText={setAddComment}
                 />
@@ -397,11 +411,12 @@ const formatDate = (dateStr) => {
             )}
 
             {/* ── Issue Tab ── */}
-            { sparePart.type_of_spare !== "bulk-spare-part" &&  activeTab === "issue" && (
+            { sparePart.type_of_spare === "bulk-spare-part" &&  activeTab === "issue" && (
               <>
                 <TextInput
                   style={styles.input}
                   placeholder="Enter quantity"
+                  placeholderTextColor="#000"
                   keyboardType="numeric"
                   value={issueAmount}
                   onChangeText={handleIssueAmountChange}
@@ -418,6 +433,7 @@ const formatDate = (dateStr) => {
                 <TextInput
                   style={styles.input}
                   placeholder="Comment (optional)"
+                  placeholderTextColor="#000"
                   value={issueComment}
                   onChangeText={setIssueComment}
                 />
@@ -432,7 +448,7 @@ const formatDate = (dateStr) => {
             )}
 
             {/* ── Update Status Tab ── */}
-            {sparePart.type_of_spare === "bulk-spare-part" &&  activeTab === "status" && (
+            {sparePart.type_of_spare !== "bulk-spare-part" && (
               <>
                 <TouchableOpacity
                   style={styles.dropdown}
@@ -450,6 +466,7 @@ const formatDate = (dateStr) => {
                 <TextInput
                   style={styles.input}
                   placeholder="Comment (optional)"
+                  placeholderTextColor="#000"
                   value={statusComment}
                   onChangeText={setStatusComment}
                 />
@@ -496,6 +513,7 @@ const formatDate = (dateStr) => {
               <TextInput
                 style={styles.searchInput}
                 placeholder="Search by name..."
+                placeholderTextColor="#000"
                 value={memberSearch}
                 onChangeText={handleMemberSearch}
                 autoFocus
@@ -634,9 +652,9 @@ const styles = StyleSheet.create({
 
   // Dropdown
   dropdown:            { backgroundColor: '#fff', borderRadius: 8, padding: 12, marginBottom: 10, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  dropdownPlaceholder: { color: '#aaa', fontSize: 14 },
+  dropdownPlaceholder: { color: '#000', fontSize: 14 },
   dropdownSelected:    { color: '#000', fontSize: 14, flex: 1, marginRight: 8 },
-  dropdownArrow:       { color: '#555', fontSize: 12 },
+  dropdownArrow:       { color: '#000', fontSize: 12 },
 
   // Buttons
   addBtn:    { backgroundColor: '#332828', padding: 15, borderRadius: 8, alignItems: 'center' },

@@ -22,6 +22,48 @@ router.get("/sparepart/:id",(req, res) => {
   );
 });
 
+
+
+
+//console to print inth terminal what data is fetched
+// router.get("/sparepart/:id", (req, res) => {
+//   const id = req.params.id;
+
+//   pool3.query(
+//     `SELECT * FROM spare_part WHERE id = ?`,
+//     [id],
+//     (err, rows) => {
+
+//       if (err) {
+//         console.log(err);
+//         return res.status(500).json({
+//           success: false,
+//           error: "Database error"
+//         });
+//       }
+
+//       console.log("Fetched Data:", rows);
+
+//       if (!rows || rows.length === 0) {
+//         return res.json({
+//           success: false,
+//           message: "Item not found"
+//         });
+//       }
+
+//       res.json({
+//         success: true,
+//         data: rows[0]
+//       });
+//     }
+//   );
+// });
+
+
+
+
+
+
 // ─────────────────────────────────────────────
 // GET /api/sparepart-permission/:memberId/:classification
 // Check if logged-in member has permission for this spare part's classification
@@ -188,6 +230,24 @@ router.post("/sparepart-issue", (req, res) => {
 // Log status change into sparepart_track table
 // Body: { sparepart_id, status, member_id, comment }
 // ─────────────────────────────────────────────
+// router.post("/sparepart-update-status", (req, res) => {
+//   const { sparepart_id, status, member_id, comment } = req.body;
+
+//   if (!sparepart_id || !status) {
+//     return res.status(400).json({ success: false, message: "sparepart_id and status are required" });
+//   }
+
+//   pool3.query(
+//     `INSERT INTO sparepart_track (spare_id, status, date_status_marked, comments)
+//      VALUES (?, ?, NOW(), ?)`,
+//     [sparepart_id, status, comment || ""],
+//     (err) => {
+//       if (err) return res.status(500).json({ success: false, error: "Database error" });
+//       res.json({ success: true, message: "Status updated successfully" });
+//     }
+//   );
+
+
 router.post("/sparepart-update-status", (req, res) => {
   const { sparepart_id, status, member_id, comment } = req.body;
 
@@ -195,15 +255,55 @@ router.post("/sparepart-update-status", (req, res) => {
     return res.status(400).json({ success: false, message: "sparepart_id and status are required" });
   }
 
+  const ALLOWED_TRANSITIONS = [
+    [1,3], [1,7],
+    [2,4], [2,5], [2,7],
+    [3,1], [3,2], [3,4], [3,5], [3,6], [3,7],
+    [4,5], [4,7],
+    [6,1], [6,2], [6,4], [6,5], [6,7],
+  ];
+
+  // Step 1: Get current status + both names via JOIN
   pool3.query(
-    `INSERT INTO sparepart_track (spare_id, status, date_status_marked, comments)
-     VALUES (?, ?, NOW(), ?)`,
-    [sparepart_id, status, comment || ""],
-    (err) => {
-      if (err) return res.status(500).json({ success: false, error: "Database error" });
-      res.json({ success: true, message: "Status updated successfully" });
+    `SELECT st.status, s1.desc AS current_desc, s2.desc AS new_desc
+     FROM sparepart_track st
+     JOIN \`status\` s1 ON s1.status = st.status
+     JOIN \`status\` s2 ON s2.status = ?
+     WHERE st.spare_id = ?
+     ORDER BY st.date_status_marked DESC LIMIT 1`,
+    [status, sparepart_id],
+    (err, rows) => {
+      if (err) return res.status(500).json({ success: false, message: "Database error" });
+
+      if (rows.length > 0) {
+        const currentStatus = rows[0].status;
+        const newStatus = parseInt(status);
+
+        const isAllowed = ALLOWED_TRANSITIONS.some(
+          ([from, to]) => from === currentStatus && to === newStatus
+        );
+
+        if (!isAllowed) {
+          return res.status(400).json({
+            success: false,
+            message: `Cannot change status from "${rows[0].current_desc}" to "${rows[0].new_desc}"`
+          });
+        }
+      }
+
+      // Step 2: Insert new status
+      pool3.query(
+        `INSERT INTO sparepart_track (spare_id, status, date_status_marked, comments)
+         VALUES (?, ?, NOW(), ?)`,
+        [sparepart_id, status, comment || ""],
+        (err) => {
+          if (err) return res.status(500).json({ success: false, message: "Database error" });
+          res.json({ success: true, message: "Status updated successfully" });
+        }
+      );
     }
   );
 });
+// });
 
 module.exports = router;

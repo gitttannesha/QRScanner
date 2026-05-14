@@ -1,21 +1,20 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import AddStockScreen from './src/Screens/Addstock';
 import ChemicalDetails from './src/Screens/ChemicalDetails';
 import ConsumableDetails from './src/Screens/ConsumableDetails';
 import Dashboard from './src/Screens/Dashboard';
+import IssuedItemsScreen from './src/Screens/Issuestock';
 import LoginScreen from './src/Screens/Login';
-import Profilescreen from './src/Screens/Profilescreen';
 import ScannerScreen from './src/Screens/Scanner';
 import SparePartDetails from './src/Screens/SparePartDetails';
-import AddStockScreen from './src/Screens/Addstock';
-import IssuedItemsScreen from './src/Screens/Issuestock';
 import TransactionsScreen from './src/Screens/Transaction';
 import { getRequest } from './src/services/authservice';
-import { getToken } from './src/utilis/storage';
 import { logError } from './src/utilis/errorLogger';
+import { getToken } from './src/utilis/storage';
 
 const Stack = createStackNavigator();
 
@@ -80,7 +79,6 @@ export default function App() {
         >
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="Dashboard" component={Dashboard} />
-          <Stack.Screen name="Profile" component={Profilescreen} />
           <Stack.Screen name="Scanner" component={ScannerScreen} />
           <Stack.Screen name="ChemicalDetails" component={ChemicalDetails} />
           <Stack.Screen name="ConsumableDetails" component={ConsumableDetails} />

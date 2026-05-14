@@ -1,5 +1,5 @@
 import { useNavigation } from "@react-navigation/native";
-import { useRef, useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Animated,
   Image,
@@ -10,31 +10,30 @@ import {
 } from "react-native";
 import { clearStorage, getUser } from '../utilis/storage';
 
+
 const NAVY  = "#1A3C6E";
 const AMBER = "#E8A020";
 
-const Header = ({ showProfile = false, onMenuSelect, userName: userNameProp, userRole: userRoleProp }) => {
-  const [userName, setUserName] = useState(userNameProp || "User");
-  const [userRole, setUserRole] = useState(userRoleProp || "Member");
+const Header = ({ showProfile = false, onMenuSelect }) => {
+  const [userName, setUserName] = useState("User");
+  const [userRole, setUserRole] = useState("Member");
   const navigation = useNavigation();
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
+useEffect(() => {
   const loadUser = async () => {
     try {
       const user = await getUser();
       if (user) {
-        setUserName(userNameProp || `${user.fname || ""} ${user.lname || ""}`.trim() || "User");
-        setUserRole(userRoleProp || user.position || "Member");
-          
+        setUserName(`${user.fname || ""} ${user.lname || ""}`.trim() || "User");
+        setUserRole(user.position || "Member");
       }
     } catch (e) {
       console.error("Header load user error:", e);
     }
   };
   loadUser();
-}, [userNameProp, userRoleProp]);
+}, []);
 
   const toggleDropdown = () => {
     if (dropdownVisible) {
@@ -147,7 +146,7 @@ const Header = ({ showProfile = false, onMenuSelect, userName: userNameProp, use
               onPress={() => handleMenuItemPress("addStock")}
             >
               <Text style={styles.dropdownIcon}>+</Text>
-              <Text style={styles.dropdownItemText}>Add Stock</Text>
+              <Text style={styles.dropdownItemText}>Added Stock</Text>
             </TouchableOpacity>
 
             {/* Issued Items */}
@@ -175,7 +174,7 @@ const Header = ({ showProfile = false, onMenuSelect, userName: userNameProp, use
               style={styles.dropdownItem}
               onPress={() => handleMenuItemPress("logout")}
             >
-              <Text style={styles.dropdownIcon}>⏻</Text>
+              <Text style={styles.dropdownIcon}>←</Text>
               <Text style={styles.dropdownLogoutText}>Log Out</Text>
             </TouchableOpacity>
 

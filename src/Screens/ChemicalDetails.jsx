@@ -1,8 +1,8 @@
-import apiCall from '../services/authservice';
-import { getUser } from '../utilis/storage';
 import { useEffect, useState } from 'react';
 import { Alert, KeyboardAvoidingView, Linking, Platform, RefreshControl, ScrollView, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import apiCall from '../services/authservice';
+import { getUser } from '../utilis/storage';
 import Header from './Header';
 
 const ChemicalDetails = ({ route, navigation }) => {
@@ -279,7 +279,7 @@ const extractUnit = (unitMeasure) => {
                 onPress={() => setActiveTab("addstock")}
               >
                 <Text style={[styles.toggleText, activeTab === "addstock" && styles.toggleTextActive]}>
-                 + Add Stock
+                 Add Stock
                 </Text>
              </TouchableOpacity>
 
@@ -288,7 +288,7 @@ const extractUnit = (unitMeasure) => {
                onPress={() => setActiveTab("currentstock")}
              >
                <Text style={[styles.toggleText, activeTab === "currentstock" && styles.toggleTextActive]}>
-               🔃 current stock
+               current stock
                </Text>
              </TouchableOpacity>
         </View>
@@ -299,6 +299,7 @@ const extractUnit = (unitMeasure) => {
         <TextInput
            style={styles.input}
            placeholder="Enter quantity"
+           placeholderTextColor="#000"
            keyboardType="numeric"
            value={amount}
            onChangeText={setAmount}
@@ -320,6 +321,7 @@ const extractUnit = (unitMeasure) => {
            <TextInput
              style={styles.input}
              placeholder="Enter quantity"
+             placeholderTextColor="#000"
              keyboardType="numeric"
              value={amount}
              onChangeText={setAmount}
@@ -327,6 +329,7 @@ const extractUnit = (unitMeasure) => {
           <TextInput
            style={styles.input}
            placeholder="Comment (optional)"
+           placeholderTextColor="#000"
            value={comment}
            onChangeText={setComment}
           />
