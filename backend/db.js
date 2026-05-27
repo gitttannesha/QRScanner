@@ -8,11 +8,12 @@ const dbConfig = {
     port:               process.env.DB_PORT,
     waitForConnections: true,
     connectionLimit:    10,
-    queueLimit:         0
+    queueLimit:         0,
 };
 
 const pool  = mysql.createPool({ ...dbConfig, database: process.env.DB1_NAME });
 const pool2 = mysql.createPool({ ...dbConfig, database: process.env.DB2_NAME });
 const pool3 = mysql.createPool({ ...dbConfig, database: process.env.DB3_NAME });
+const pool4 = mysql.createPool({ ...dbConfig, database: process.env.DB4_NAME });
 
-module.exports = { pool, pool2, pool3 };
+module.exports = { pool, pool2, pool3, pool4 };

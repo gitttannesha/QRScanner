@@ -10,7 +10,7 @@ const SECRET_KEY = process.env.SECRET_KEY;
 
 // POST /login
 router.post("/login", (req, res) => {
-	console.log("Login Request Body:", req.body);
+	
   const { email, password } = req.body;
   const hashedPassword = md5(password);
 
@@ -55,7 +55,7 @@ router.post("/login", (req, res) => {
     delete user.password;
     delete user.expiry_date; 
 
-    const token = jwt.sign({ id: user.memberid, email: user.email }, SECRET_KEY, { expiresIn: "30d" });
+    const token = jwt.sign({ id: user.memberid, email: user.email }, SECRET_KEY, { expiresIn: "15d" });
     res.json({ success: true, token, user });
   });
 });

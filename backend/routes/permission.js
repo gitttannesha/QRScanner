@@ -4,8 +4,9 @@ const { pool2 } = require("../db");
 const verifyToken = require("../middleware");
 
 // GET /check-permission/:memberId/:chemicalId
-router.get("/check-permission/:memberId/:chemicalId", (req, res) => {
-  const { memberId, chemicalId } = req.params;
+router.get("/check-permission/:chemicalId", (req, res) => {
+  const memberId = req.user.id;
+  const { chemicalId } = req.params;
 
   const chemicalSQL = "SELECT type FROM bulk_chemical WHERE chemical_id = ?";
 
@@ -26,8 +27,9 @@ router.get("/check-permission/:memberId/:chemicalId", (req, res) => {
 module.exports = router;
 
 
-router.get("/check-consumable-permission/:memberId/:role",(req, res) => {
-  const { memberId, role } = req.params;
+router.get("/check-consumable-permission/:role",(req, res) => {
+  const memberId = req.user.id;
+  const { role } = req.params;
 
   const validRoles = ["consumables-one-time", "consumables-reusable"];
   if (!validRoles.includes(role)) {

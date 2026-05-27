@@ -2,10 +2,12 @@ const express = require("express");
 const router = express.Router();
 const {pool2 } = require("../db");
 const verifyToken = require("../middleware");
+const { requireChemicalPermission } = require("../inventoryPermission");
 
 // POST /api/add-stock
-router.post("/add-stock",(req, res) => {
-  const { chemical_id, amount_to_add, member_id, comment } = req.body;
+router.post("/add-stock",requireChemicalPermission, (req, res) => {
+  const { chemical_id, amount_to_add, comment } = req.body;
+  const member_id = req.user.id;
 
   const getCurrentStock = "SELECT stock_present FROM bulk_chemical_update WHERE chemical_id = ? ORDER BY datetime DESC LIMIT 1";
 
@@ -25,8 +27,9 @@ router.post("/add-stock",(req, res) => {
 });
 
 // POST /api/update-stock
-router.post("/update-stock", (req, res) => {
-  const { chemical_id, new_total, member_id, comment } = req.body;
+router.post("/update-stock",requireChemicalPermission, (req, res) => {
+  const { chemical_id, new_total, comment } = req.body;
+  const member_id = req.user.id;
 
   const sql = "INSERT INTO bulk_chemical_update (chemical_id, stock_present, datetime, flag, updated_by, comments) VALUES (?, ?, NOW(), 0, ?, ?)";
 

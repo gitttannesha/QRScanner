@@ -71,7 +71,7 @@ const SparePartDetails = ({ route, navigation }) => {
     const checkPerm = async () => {
       try {
         const response = await apiCall('GET',
-          `/sparepart-permission/${memberId}/${sparePart.classification}`
+          `/sparepart-permission/${sparePart.classification}`
         );
         if (response.data.success) setHasPermission(response.data.hasPermission);
       } catch (error) {
@@ -85,7 +85,7 @@ const SparePartDetails = ({ route, navigation }) => {
 
   // ── Fetch current stock from spare_part.quantity ──
   useEffect(() => {
-    setCurrentStock(sparePart.quantity ?? null);
+    fetchCurrentStock();
   }, []);
 
   // ── Fetch status list ──
@@ -162,17 +162,30 @@ const SparePartDetails = ({ route, navigation }) => {
     setIssueAmount(text);
   };
 
+
+  const fetchCurrentStock = async () => {
+  try {
+    const response = await apiCall('GET', `/sparepart/${sparePart.id}`);
+
+    if (response.data.success) {
+      setCurrentStock(response.data.data.quantity);
+    }
+  } catch (error) {
+    console.error("Fetch stock error:", error.message);
+  }
+};
+
   // ── Pull to Refresh ──
   const onRefresh = async () => {
-    setRefreshing(true);
-    try {
-      setCurrentStock(sparePart.quantity ?? null);
-    } catch (error) {
-      console.error("Refresh error:", error);
-    } finally {
-      setRefreshing(false);
-    }
-  };
+  setRefreshing(true);
+  try {
+    await fetchCurrentStock();
+  } catch (error) {
+    console.error("Refresh error:", error);
+  } finally {
+    setRefreshing(false);
+  }
+};
 
   // ── Add Stock ──
   const handleAddStock = async () => {
@@ -182,7 +195,6 @@ const SparePartDetails = ({ route, navigation }) => {
       const response = await apiCall('POST' ,`/sparepart-add-stock`, {
         sparepart_id: sparePart.id,
         amount_to_add: parseInt(addAmount),
-        member_id: memberId,
         comment: addComment.trim()
       });
       if (response.data.success) {
@@ -209,7 +221,6 @@ const SparePartDetails = ({ route, navigation }) => {
       const response = await apiCall('POST', `/sparepart-issue`, {
         sparepart_id: sparePart.id,
         amount_to_issue: parseInt(issueAmount),
-        issued_by: memberId,
         issued_to: issuedTo.memberid,
         comment: issueComment.trim()
       });
@@ -236,7 +247,6 @@ const SparePartDetails = ({ route, navigation }) => {
       const response = await apiCall('POST',`/sparepart-update-status`, {
         sparepart_id: sparePart.id,
         status: selectedStatus.status,
-        member_id: memberId,
         comment: statusComment.trim()
       });
       if (response.data.success) {

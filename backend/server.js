@@ -9,17 +9,27 @@ const permissionRoutes  = require("./routes/permission");
 const consumableRoutes  = require("./routes/consumable");
 const profileRoutes     = require("./routes/profile");
 const sparePartRoutes   = require("./routes/Sparepart");
+const complaintRoutes   = require("./routes/complaints");
 const logger = require('./Logger');
 const verifyToken = require("./middleware");  // ✅ import middleware
 const app = express();
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+
+
+// app.use(express.json());
+// app.use(express.urlencoded({ extended: true }));
+
 app.use(cors({
     origin: '*',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
 }));
+
+
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ limit: "10mb", extended: true }));
+
+//app.use("/views/uploads", express.static(path.join(__dirname, "views/uploads")));
 
 app.post('/api/log-error', (req, res) => {
     const { message, stack, ...context } = req.body;
@@ -38,6 +48,8 @@ app.use("/api", verifyToken, permissionRoutes);
 app.use("/api", verifyToken, consumableRoutes);
 app.use("/api", verifyToken, sparePartRoutes);
 app.use("/api", verifyToken, profileRoutes);
+app.use("/api", verifyToken, complaintRoutes);
+
 
 
 const PORT = 5000;
@@ -52,3 +64,4 @@ app.listen(PORT, "0.0.0.0", () => {
     console.log(`Target IP for your App: http://${IP_ADDRESS}:${PORT}`);
     console.log("------------------------------------------");
 });
+      

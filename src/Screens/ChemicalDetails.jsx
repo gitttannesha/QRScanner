@@ -37,7 +37,7 @@ const ChemicalDetails = ({ route, navigation }) => {
 	if (parsed) {
 	setMemberId(parsed.memberid);
 	setUserName(`${parsed.fname} ${parsed.lname}` || "User");
-	const response = await apiCall('GET', `/check-permission/${parsed.memberid}/${chemical.chemical_id}`);
+	const response = await apiCall('GET', `/check-permission/${chemical.chemical_id}`);
 	setHasPermission(response.data.hasPermission);
 		}        
 
@@ -84,8 +84,6 @@ const extractUnit = (unitMeasure) => {
       const response = await apiCall('POST', `/add-stock`, {
         chemical_id: chemical.chemical_id,
         amount_to_add: parseFloat(amount),
-        member_id: memberId,
-       // comment: comment.trim() 
       });
       if (response.data.success) {
         Alert.alert("Success", `Stock updated! New stock: ${response.data.new_stock}`);
@@ -117,7 +115,6 @@ const extractUnit = (unitMeasure) => {
       const response = await apiCall('POST' , `/update-stock`, {
         chemical_id: chemical.chemical_id,
         new_total: parseFloat(amount),
-        member_id: memberId,
         comment: comment.trim() 
       });
       if (response.data.success) {

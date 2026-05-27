@@ -7,14 +7,17 @@ import AddStockScreen from './src/Screens/Addstock';
 import ChemicalDetails from './src/Screens/ChemicalDetails';
 import ConsumableDetails from './src/Screens/ConsumableDetails';
 import Dashboard from './src/Screens/Dashboard';
+import Form from './src/Screens/Form';
 import IssuedItemsScreen from './src/Screens/Issuestock';
 import LoginScreen from './src/Screens/Login';
 import ScannerScreen from './src/Screens/Scanner';
 import SparePartDetails from './src/Screens/SparePartDetails';
 import TransactionsScreen from './src/Screens/Transaction';
+// import Troubleshooting from './src/Screens/Troubleshooting';
 import { getRequest } from './src/services/authservice';
 import { logError } from './src/utilis/errorLogger';
 import { getToken } from './src/utilis/storage';
+
 
 const Stack = createStackNavigator();
 
@@ -81,6 +84,8 @@ export default function App() {
           <Stack.Screen name="Dashboard" component={Dashboard} />
           <Stack.Screen name="Scanner" component={ScannerScreen} />
           <Stack.Screen name="ChemicalDetails" component={ChemicalDetails} />
+          {/* <Stack.Screen name="Troubleshooting" component={Troubleshooting} /> */}
+          <Stack.Screen name="Form" component={Form} />
           <Stack.Screen name="ConsumableDetails" component={ConsumableDetails} />
           <Stack.Screen name="SparePartDetails" component={SparePartDetails} />
           <Stack.Screen name="Addstock" component={AddStockScreen} />

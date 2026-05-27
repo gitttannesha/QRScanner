@@ -1,5 +1,6 @@
 import { Feather as Icon, MaterialIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+//import rateLimit from "express-rate-limit";
 import { useEffect, useState } from "react";
 import {
   Alert,
@@ -60,7 +61,7 @@ const LoginScreen = () => {
       if (res.data.success) {
         await saveToken(res.data.token);
         await saveUser(res.data.user);
-        Alert.alert("Login Success");
+        Alert.alert("Login Success, your session will last for 15 days");
         navigation.replace("Dashboard");
       }
     }
@@ -80,6 +81,15 @@ const LoginScreen = () => {
 }
 
 
+//   const loginLimiter = rateLimit({
+//   windowMs: 60 * 60 * 1000, // 1 hr
+//   max: 5,
+//   message: { error: "5 login attempts done. Please try again after 1 hr." },
+// });
+
+router.post("/login", loginLimiter, loginHandler);
+
+
   };
 
   return (
@@ -94,7 +104,6 @@ const LoginScreen = () => {
       {/* ── Header added (logo only, no person icon) ── */}
       <Header showProfile={false} />
 
-      {/* ── Everything below is exactly the same as before ── */}
       <SafeAreaView style={styles.container}>
         <View style={styles.card}>
           <Text style={styles.title}>QR INVENTORY APP</Text>

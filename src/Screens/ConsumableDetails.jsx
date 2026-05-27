@@ -69,7 +69,7 @@ const ConsumableDetails = ({ route, navigation }) => {
     const checkPerm = async () => {
       try {
         const response = await apiCall('GET',
-          `/check-consumable-permission/${memberId}/${role}`
+          `/check-consumable-permission/${role}`
         );
         if (response.data.success) setHasPermission(response.data.hasPermission);
       } catch (error) {
@@ -238,7 +238,6 @@ const fetchPendingStock = async (member) => {
         consumable_id: consumable.id,
         table,
         amount_to_add: parseFloat(amount),
-        member_id: memberId,
         comment: comment.trim()
       });
       if (response.data.success) {

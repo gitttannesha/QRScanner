@@ -2,6 +2,7 @@ const express = require("express");
 const router  = express.Router();
 const {pool , pool2 } = require("../db");
 const verifyToken = require("../middleware");
+const { requireConsumablePermission } = require("../inventoryPermission");
 
 // ── Table whitelists ──
 const MASTER_TABLES   = { OT: "one_time_master_new",   RE: "reusables_master_new"   };
@@ -91,8 +92,9 @@ router.get("/consumable-stock/:id",(req, res) => {
 // 2. Insert log row into purchase table
 // Body: { consumable_id, table, amount_to_add, member_id, comment }
 // ─────────────────────────────────────────────
-router.post("/add-consumable-stock",(req, res) => {
-  const { consumable_id, table, amount_to_add, member_id, comment } = req.body;
+router.post("/add-consumable-stock", requireConsumablePermission,(req, res) => {
+  const { consumable_id, table, amount_to_add, comment } = req.body;
+  const member_id = req.user.id;
 
   const prefix = getPrefix(table);
   if (!prefix) return res.status(400).json({ success: false, message: "Invalid table name" });
@@ -159,7 +161,7 @@ router.get("/consumable-members", (req, res) => {
 
 
 
-router.post("/issue-consumable", (req, res) => {
+router.post("/issue-consumable", requireConsumablePermission, (req, res) => {
   const { consumable_id, table, amount_to_issue, issued_to, lab_location_id, comment, flag } = req.body;
 
   const prefix = getPrefix(table);
@@ -220,7 +222,7 @@ router.post("/issue-consumable", (req, res) => {
   );
 });
 
-router.post("/return-consumable", (req, res) => {
+router.post("/return-consumable", requireConsumablePermission, (req, res) => {
   const { consumable_id, table, amount_to_return, issued_to, lab_location_id, comment } = req.body;
 
   const prefix = getPrefix(table);

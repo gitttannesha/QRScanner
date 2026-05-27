@@ -2,6 +2,7 @@ const express = require("express");
 const router  = express.Router();
 const { pool3 } = require("../db");
 const verifyToken = require("../middleware");
+const { requireSparepartPermission } = require("../inventoryPermission");
 
 // ─────────────────────────────────────────────
 // GET /api/sparepart/:id
@@ -24,75 +25,63 @@ router.get("/sparepart/:id",(req, res) => {
 
 
 
-
-//console to print inth terminal what data is fetched
-// router.get("/sparepart/:id", (req, res) => {
-//   const id = req.params.id;
-
-//   pool3.query(
-//     `SELECT * FROM spare_part WHERE id = ?`,
-//     [id],
-//     (err, rows) => {
-
-//       if (err) {
-//         console.log(err);
-//         return res.status(500).json({
-//           success: false,
-//           error: "Database error"
-//         });
-//       }
-
-//       console.log("Fetched Data:", rows);
-
-//       if (!rows || rows.length === 0) {
-//         return res.json({
-//           success: false,
-//           message: "Item not found"
-//         });
-//       }
-
-//       res.json({
-//         success: true,
-//         data: rows[0]
-//       });
-//     }
-//   );
-// });
-
-
-
-
-
-
 // ─────────────────────────────────────────────
 // GET /api/sparepart-permission/:memberId/:classification
 // Check if logged-in member has permission for this spare part's classification
 // Looks up mail_permission_spareparts table — column name = classification value
 // Returns: { hasPermission: true/false }
 // ─────────────────────────────────────────────
-router.get("/sparepart-permission/:memberId/:classification",(req, res) => {
-  const { memberId, classification } = req.params;
+router.get("/sparepart-permission/:classification",(req, res) => {
+  const memberId = req.user.id;
+  const { classification } = req.params;
 
-  // Whitelist allowed classification columns to prevent SQL injection
-  const ALLOWED_CLASSIFICATIONS = ["equipment", "emt", "facility", "safety", "consumables"];
+  const ALLOWED_CLASSIFICATIONS = [
+    "equipment",
+    "emt",
+    "facility",
+    "safety",
+    "consumables"
+  ];
 
-  if (!ALLOWED_CLASSIFICATIONS.includes(classification.toLowerCase())) {
-    return res.status(400).json({ success: false, message: "Invalid classification" });
+  const col = String(classification).toLowerCase();
+
+  if (!ALLOWED_CLASSIFICATIONS.includes(col)) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid classification"
+    });
   }
 
-  const col = classification.toLowerCase();
-
   pool3.query(
-    `SELECT \`${col}\` AS permission FROM mail_permission_spareparts WHERE memberid = ?`,
+    `SELECT \`${col}\` AS permission
+     FROM mail_permission_spareparts
+     WHERE memberid = ?`,
     [memberId],
     (err, rows) => {
-      if (err)                        return res.status(500).json({ success: false, error: "Database error" });
-      if (!rows || rows.length === 0) return res.json({ success: true, hasPermission: false });
-      res.json({ success: true, hasPermission: rows[0].permission === 1 });
+      if (err) {
+        return res.status(500).json({
+          success: false,
+          error: "Database error"
+        });
+      }
+
+      if (!rows || rows.length === 0) {
+        return res.json({
+          success: true,
+          hasPermission: false
+        });
+      }
+
+      return res.json({
+        success: true,
+        hasPermission: rows[0].permission === 1
+      });
     }
   );
 });
 
+
+  
 // ─────────────────────────────────────────────
 // GET /api/sparepart-status
 // Fetch all status types from status table
@@ -117,8 +106,9 @@ router.get("/sparepart-status",(req, res) => {
 // 2. Insert log row into bulk_sparepart_update
 // Body: { sparepart_id, amount_to_add, member_id, comment }
 // ─────────────────────────────────────────────
-router.post("/sparepart-add-stock", (req, res) => {
-  const { sparepart_id, amount_to_add, member_id, comment } = req.body;
+router.post("/sparepart-add-stock", requireSparepartPermission, (req, res) => {
+  const { sparepart_id, amount_to_add, comment } = req.body;
+  const member_id = req.user.id;
 
   if (!sparepart_id || !amount_to_add || parseFloat(amount_to_add) <= 0) {
     return res.status(400).json({ success: false, message: "Invalid input" });
@@ -164,8 +154,9 @@ router.post("/sparepart-add-stock", (req, res) => {
 // 3. Insert log into bulk_sparepart_issue (issued_by + issued_to)
 // Body: { sparepart_id, amount_to_issue, issued_by, issued_to, comment }
 // ─────────────────────────────────────────────
-router.post("/sparepart-issue", (req, res) => {
-  const { sparepart_id, amount_to_issue, issued_by, issued_to, comment } = req.body;
+router.post("/sparepart-issue", requireSparepartPermission, (req, res) => {
+  const { sparepart_id, amount_to_issue, issued_to, comment } = req.body;
+  const issued_by = req.user.id;
 
   if (!sparepart_id || !amount_to_issue || parseFloat(amount_to_issue) <= 0) {
     return res.status(400).json({ success: false, message: "Invalid input" });
@@ -230,25 +221,9 @@ router.post("/sparepart-issue", (req, res) => {
 // Log status change into sparepart_track table
 // Body: { sparepart_id, status, member_id, comment }
 // ─────────────────────────────────────────────
-// router.post("/sparepart-update-status", (req, res) => {
-//   const { sparepart_id, status, member_id, comment } = req.body;
-
-//   if (!sparepart_id || !status) {
-//     return res.status(400).json({ success: false, message: "sparepart_id and status are required" });
-//   }
-
-//   pool3.query(
-//     `INSERT INTO sparepart_track (spare_id, status, date_status_marked, comments)
-//      VALUES (?, ?, NOW(), ?)`,
-//     [sparepart_id, status, comment || ""],
-//     (err) => {
-//       if (err) return res.status(500).json({ success: false, error: "Database error" });
-//       res.json({ success: true, message: "Status updated successfully" });
-//     }
-//   );
 
 
-router.post("/sparepart-update-status", (req, res) => {
+router.post("/sparepart-update-status", requireSparepartPermission, (req, res) => {
   const { sparepart_id, status, member_id, comment } = req.body;
 
   if (!sparepart_id || !status) {

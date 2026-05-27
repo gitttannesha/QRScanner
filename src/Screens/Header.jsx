@@ -78,8 +78,8 @@ useEffect(() => {
           navigation.navigate("IssuedItems");
         } else if (section === "transactions") {
           navigation.navigate("Transactions");
-        } else if (section === "profile") {
-          navigation.navigate("Profile");
+        // } else if (section === "troubleshooting") {
+        //   navigation.navigate("Troubleshooting");
         } else if (onMenuSelect) {
           onMenuSelect(section);
         } 
@@ -166,6 +166,17 @@ useEffect(() => {
               <Text style={styles.dropdownIcon}>⇄</Text>
               <Text style={styles.dropdownItemText}>Transactions</Text>
             </TouchableOpacity>
+
+            
+
+          {/* Troubleshooting */}
+            {/* <TouchableOpacity
+              style={styles.dropdownItem}
+              onPress={() => handleMenuItemPress("troubleshooting")}
+            >
+              <Text style={styles.dropdownIcon}>🔧</Text>
+              <Text style={styles.dropdownItemText}>Troubleshooting</Text>
+            </TouchableOpacity> */}
 
             <View style={styles.dropdownDivider} />
 
