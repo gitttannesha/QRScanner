@@ -1,4 +1,3 @@
-import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import AddStockScreen from "../Screens/Addstock";
@@ -11,6 +10,7 @@ import Profilescreen from "../Screens/Profilescreen";
 import ScannerScreen from "../Screens/Scanner";
 import SparePartDetails from "../Screens/SparePartDetails";
 import TransactionsScreen from "../Screens/Transaction";
+import Troubleshooting from "../Screens/Troubleshooting";
 
 const Stack = createStackNavigator();
 
@@ -31,6 +31,7 @@ export default function AppNavigator({ initialRouteName = "Login" }) {
         <Stack.Screen name="Addstock" component={AddStockScreen} />
         <Stack.Screen name="IssuedItems" component={IssuedItemsScreen} />
         <Stack.Screen name="Transactions" component={TransactionsScreen} />
+        <Stack.Screen name="Troubleshooting" component={Troubleshooting} />
       </Stack.Navigator>
     </NavigationContainer>
   );

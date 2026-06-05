@@ -74,8 +74,19 @@ const extractUnit = (unitMeasure) => {
   return match ? match[0] : "";
 };
 
+
+const isValidQuantity = (value) => {
+  const num = parseFloat(value);
+  return (
+    value.trim() !== "" &&     // not empty
+    !isNaN(num) &&             // is a valid number
+    num > 0 &&                 // must be positive
+    /^\d+(\.\d+)?$/.test(value.trim())  // only digits and ONE dot allowed
+  );
+};
+
   const handleAddStock = async () => {
-    if (!amount || parseFloat(amount) <= 0) {
+    if (!isValidQuantity(amount)) {
       Alert.alert("Invalid Input", "Please enter a valid quantity to add.");
       return;
     }
@@ -100,7 +111,7 @@ const extractUnit = (unitMeasure) => {
   };
 
   const handleUpdateStock = async () => {
-    if (!amount || parseFloat(amount) < 0) {
+    if (!isValidQuantity(amount)) {
       Alert.alert("Invalid Input", "Please enter a valid stock value.");
       return;
     }
@@ -136,7 +147,7 @@ const extractUnit = (unitMeasure) => {
   style={styles.container}
   behavior={Platform.OS === "ios" ? "padding" : "height"}
 >
-      <StatusBar barStyle="light-content" backgroundColor="#1A3C6E" />
+      <StatusBar barStyle="light-content" backgroundColor= "NAVY"/>
 
       {/* ── Header (logo only, no person icon) ── */}
       <Header userName={userName} showProfile={true} />
@@ -299,7 +310,12 @@ const extractUnit = (unitMeasure) => {
            placeholderTextColor="#000"
            keyboardType="numeric"
            value={amount}
-           onChangeText={setAmount}
+           contextMenuHidden={true}
+           onChangeText={(text) => {
+            const cleaned = text.replace(/[^0-9.]/g, "");
+            setAmount(cleaned);
+          }}
+           contextMenuHidden={true}
           />
         
         <TouchableOpacity
@@ -321,7 +337,12 @@ const extractUnit = (unitMeasure) => {
              placeholderTextColor="#000"
              keyboardType="numeric"
              value={amount}
-             onChangeText={setAmount}
+             contextMenuHidden={true}
+             onChangeText={(text) => {
+              const cleaned = text.replace(/[^0-9.]/g, "");
+              setAmount(cleaned);
+            }}
+             contextMenuHidden={true}
            />
           <TextInput
            style={styles.input}
@@ -329,6 +350,7 @@ const extractUnit = (unitMeasure) => {
            placeholderTextColor="#000"
            value={comment}
            onChangeText={setComment}
+           contextMenuHidden={true}
           />
          <TouchableOpacity
            style={[styles.updateBtn, isUpdating && { opacity: 0.5 }]}

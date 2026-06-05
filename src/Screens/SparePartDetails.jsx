@@ -402,6 +402,7 @@ const formatDate = (dateStr) => {
                   keyboardType="numeric"
                   value={addAmount}
                   onChangeText={handleAddAmountChange}
+                  contextMenuHidden={true}
                 />
                 <TextInput
                   style={styles.input}
@@ -409,6 +410,7 @@ const formatDate = (dateStr) => {
                   placeholderTextColor="#000"
                   value={addComment}
                   onChangeText={setAddComment}
+                  contextMenuHidden={true}
                 />
                 <TouchableOpacity
                   style={[styles.addBtn, isUpdating && { opacity: 0.5 }]}
@@ -430,6 +432,7 @@ const formatDate = (dateStr) => {
                   keyboardType="numeric"
                   value={issueAmount}
                   onChangeText={handleIssueAmountChange}
+                  contextMenuHidden={true}
                 />
                 <TouchableOpacity
                   style={styles.dropdown}
@@ -446,6 +449,7 @@ const formatDate = (dateStr) => {
                   placeholderTextColor="#000"
                   value={issueComment}
                   onChangeText={setIssueComment}
+                  contextMenuHidden={true}
                 />
                 <TouchableOpacity
                   style={[styles.issueBtn, isUpdating && { opacity: 0.5 }]}
@@ -479,6 +483,7 @@ const formatDate = (dateStr) => {
                   placeholderTextColor="#000"
                   value={statusComment}
                   onChangeText={setStatusComment}
+                  contextMenuHidden={true}
                 />
                 <TouchableOpacity
                   style={[styles.statusBtn, isUpdating && { opacity: 0.5 }]}

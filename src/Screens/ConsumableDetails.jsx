@@ -112,18 +112,9 @@ const onRefresh = async () => {
 
 
   // ── Fetch current stock ──
-  useEffect(() => {
-    const fetchStock = async () => {
-      try {
-        const response = await apiCall('GET',
-          `/consumable-stock/${consumable.id}?table=${table}`
-        );
-        if (response.data.success) setCurrentStock(response.data.stock);
-      } catch (error) {
-        console.error("Fetch stock error:", error.message);
-      }
-    };
-    fetchStock();
+  
+   useEffect(() => {
+  fetchCurrentStock();
   }, []);
 
   // ── Fetch lab locations ──
@@ -209,15 +200,19 @@ const fetchPendingStock = async (member) => {
     setPendingStock(null);
   };
 
- const validateAmount = () => {
-  if (!amount || parseInt(amount) <= 0) {
+const validateAmount = (value) => {
+  if (!value || value.trim() === "") {
     Alert.alert("Invalid Input", "Please enter a valid quantity.");
     return false;
   }
-  if (amount.includes('.')) {
-    Alert.alert("Invalid Input", "Please enter whole numbers only");
+  if (!/^\d+$/.test(value.trim())) {
+    Alert.alert("Invalid Input", "Only whole numbers allowed.");
     return false;
   }
+  // if (parseFloat(value) <= 0) {
+  //   Alert.alert("Invalid Input", "Quantity must be greater than 0.");
+  //   return false;
+  // }
   return true;
 };
 
@@ -231,7 +226,7 @@ const fetchPendingStock = async (member) => {
 
   // ── Add Stock ──
   const handleAddStock = async () => {
-    if (!validateAmount()) return;
+    if (!validateAmount(amount)) return;
     setIsUpdating(true);
     try {
       const response = await apiCall('POST', `/add-consumable-stock`, {
@@ -257,7 +252,7 @@ const fetchPendingStock = async (member) => {
 
   // ── Issue (flag = 0) ──
   const handleIssue = async () => {
-    if (!validateAmount()) return;
+    if (!validateAmount(amount)) return;
     if (!validateMember()) return;
     setIsUpdating(true);
     try {
@@ -287,12 +282,13 @@ const fetchPendingStock = async (member) => {
 
   // ── Return — reusables only (flag = 1) ──
  const handleReturn = async () => {
-  if (!validateAmount()) return;
+  if (!validateAmount(amount)) return;
   if (!validateMember()) return;
   if (pendingStock !== null && parseFloat(amount) > pendingStock) {
     Alert.alert("Cannot Return", `Only ${pendingStock} units pending. Cannot return ${amount}.`);
     return;
   }
+  setIsUpdating(true);
     try {
       const response = await apiCall('POST' , `/return-consumable`, {
         consumable_id: consumable.id,
@@ -449,7 +445,13 @@ const fetchPendingStock = async (member) => {
                   placeholderTextColor="#000"
                   keyboardType="numeric"
                   value={amount}
-                  onChangeText={setAmount}
+                  onChangeText={(text) => {
+                    setAmount(text);
+                    if (text.includes('.')) {
+                      Alert.alert("Invalid Input", "Only whole numbers allowed.");
+                    }
+                  }}
+                  contextMenuHidden={true}
                 />
                 <TextInput
                   style={styles.input}
@@ -457,6 +459,7 @@ const fetchPendingStock = async (member) => {
                   placeholderTextColor="#000"
                   value={comment}
                   onChangeText={setComment}
+                  contextMenuHidden={true}
                 />
                 <TouchableOpacity
                   style={[styles.addBtn, isUpdating && { opacity: 0.5 }]}
@@ -477,7 +480,13 @@ const fetchPendingStock = async (member) => {
       placeholderTextColor="#000"
       keyboardType="numeric"
       value={amount}
-      onChangeText={setAmount}
+      onChangeText={(text) => {
+        setAmount(text);
+        if (text.includes('.')) {
+          Alert.alert("Invalid Input", "Only whole numbers allowed");
+        }
+      }}
+      contextMenuHidden={true}
     />
     <TouchableOpacity
       style={styles.dropdown}
@@ -503,6 +512,7 @@ const fetchPendingStock = async (member) => {
       placeholderTextColor="#000"
       value={comment}
       onChangeText={setComment}
+      contextMenuHidden={true}
     />
     <TouchableOpacity
       style={[styles.issueBtn, isUpdating && { opacity: 0.5 }]}
@@ -536,7 +546,13 @@ const fetchPendingStock = async (member) => {
       placeholderTextColor="#000"
       keyboardType="numeric"
       value={amount}
-      onChangeText={setAmount}
+      onChangeText={(text) => {
+        setAmount(text);
+        if (text.includes('.')) {
+          Alert.alert("Invalid Input", "Only whole numbers allowed");
+        }
+      }}
+      contextMenuHidden={true}
     />
     <TouchableOpacity
       style={styles.dropdown}
@@ -562,6 +578,7 @@ const fetchPendingStock = async (member) => {
       placeholderTextColor="#000"
       value={comment}
       onChangeText={setComment}
+      contextMenuHidden={true}
     />
     <TouchableOpacity
       style={[styles.returnBtn, isUpdating && { opacity: 0.5 }]}

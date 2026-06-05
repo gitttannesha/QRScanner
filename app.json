@@ -9,12 +9,23 @@
     "scheme": "qrscanner",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+
+    "runtimeVersion": {
+      "policy": "sdkVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/84378422-8b94-4550-8a08-151fef4d5833",
+      "enabled": true,
+      "checkAutomatically": "ON_LOAD"
+    },
+
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "minSdkVersion": 21,
       "package": "com.annesha.QRScanner",
+      
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./src/assets/icon.png"
@@ -47,7 +58,9 @@
             "usesCleartextTraffic": true
           }
         }
-      ]
+      ],
+      "@react-native-community/datetimepicker",
+      "expo-audio"
     ],
     "experiments": {
       "typedRoutes": true,

@@ -1,14 +1,17 @@
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useNavigation, useRoute } from "@react-navigation/native";
+import { Audio } from "expo-av";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import * as FileSystem from "expo-file-system/legacy";
+import * as ImageManipulator from 'expo-image-manipulator';
 import * as Print from "expo-print";
 import { useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
   Image,
+  Modal,
   Platform,
   ScrollView,
   StyleSheet,
@@ -38,14 +41,21 @@ const PLACEHOLDERS = {
   en: {
     diagnosis: "Describe the diagnosis...",
     action: "Describe the action taken...",
+    expectedDate: "Expected Completion Date",
+    complaintStatus: "Complaint Status",
+    selectStatus: "Select Status...",
+    statusOptions: ["Pending", "In Process", "Closed", "On Hold"],
+    
   },
   mr: {
     diagnosis: "निदान वर्णन करा...",
     action: "केलेली कारवाई वर्णन करा...",
+   
   },
   hi: {
     diagnosis: "निदान का वर्णन करें...",
     action: "की गई कार्रवाई का वर्णन करें...",
+   
   },
 };
 
@@ -64,11 +74,18 @@ const Form = () => {
   const [selectedLanguage, setSelectedLanguage] = useState("en");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-
+  const [pdfSize, setPdfSize] = useState(null);
   const [showCamera, setShowCamera] = useState(false);
   const [photos, setPhotos] = useState([]);
   const [pdfUri, setPdfUri] = useState(null);
   const [generatingPdf, setGeneratingPdf] = useState(false);
+  const [previewVisible, setPreviewVisible] = useState(false);
+  const [previewIndex, setPreviewIndex] = useState(0);
+
+  const [recording, setRecording] = useState(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const [transcribing, setTranscribing] = useState(false);
+  const [activeMic, setActiveMic] = useState(null); 
 
   const [cameraPermission, requestCameraPermission] = useCameraPermissions();
   const cameraRef = useRef(null);
@@ -140,6 +157,7 @@ const Form = () => {
     try {
       const captured = await cameraRef.current.takePictureAsync({
         quality: 0.7,
+        shutterSound: false,
       });
 
       const fileInfo = await FileSystem.getInfoAsync(captured.uri);
@@ -184,39 +202,48 @@ const Form = () => {
   const clearPhotos = () => {
     setPhotos([]);
     setPdfUri(null);
+    setPdfSize(null);
   };
 
   const finishPhotos = async () => {
-    if (photos.length === 0) {
-      setShowCamera(false);
-      return;
-    }
+  if (photos.length === 0) {
+    setShowCamera(false);
+    return;
+  }
 
-    if (photos.length === 1) {
-      setPdfUri(null);
-      setShowCamera(false);
-      return;
-    }
+  if (photos.length === 1) {
+    setPdfUri(null);
+    setShowCamera(false);
+    return;
+  }
 
-    setGeneratingPdf(true);
+  setGeneratingPdf(true);
 
-    try {
-      const imagePages = await Promise.all(
-        photos.map(async (photo, index) => {
-          const base64 = await FileSystem.readAsStringAsync(photo.uri, {
-            encoding: "base64",
-          });
+  try {
+    const imagePages = await Promise.all(
+      photos.map(async (photo, index) => {
 
-          const pageBreak =
-            index < photos.length - 1 ? "page-break-after: always;" : "";
+        // ✅ Compress before embedding
+        const compressed = await ImageManipulator.manipulateAsync(
+          photo.uri,
+          [{ resize: { width: 1000 } }],
+          { compress: 0.5, format: ImageManipulator.SaveFormat.JPEG }
+        );
 
-          return `
-            <div class="page" style="${pageBreak}">
-              <img src="data:image/jpeg;base64,${base64}" />
-            </div>
-          `;
-        })
-      );
+        const base64 = await FileSystem.readAsStringAsync(compressed.uri, {
+          encoding: "base64",
+        });
+
+        const pageBreak =
+          index < photos.length - 1 ? "page-break-after: always;" : "";
+
+        return `
+          <div class="page" style="${pageBreak}">
+            <img src="data:image/jpeg;base64,${base64}" />
+          </div>
+        `;
+      })
+    );
 
       const html = `
         <!DOCTYPE html>
@@ -257,17 +284,21 @@ const Form = () => {
 
       const result = await Print.printToFileAsync({ html });
 
-      setPdfUri(result.uri);
-      setShowCamera(false);
+//Get PDF file size
+const pdfInfo = await FileSystem.getInfoAsync(result.uri);
 
-      Alert.alert("Done", `${photos.length} photos saved as one PDF.`);
-    } catch (error) {
-      console.log("PDF generation error:", error);
-      Alert.alert("Error", "Could not create PDF from the selected photos.");
-    } finally {
-      setGeneratingPdf(false);
-    }
-  };
+setPdfUri(result.uri);
+setPdfSize(pdfInfo.size); //store the size
+setShowCamera(false);
+
+Alert.alert("Done", `${photos.length} images saved as PDF (${formatSize(pdfInfo.size)})`);
+} catch (error) {
+  console.log("PDF generation error:", error);
+  Alert.alert("Error", "Could not create PDF from the selected photos.");
+} finally {
+  setGeneratingPdf(false);
+}
+};
 
   const handleSubmit = async () => {
     if (!complaintId) {
@@ -280,11 +311,13 @@ const Form = () => {
       return;
     }
 
+  
     if (!actionTaken.trim()) {
       Alert.alert("Missing Field", "Enter action taken.");
       return;
     }
 
+  
     if (!expectedDate) {
       Alert.alert("Missing Field", "Select an expected completion date.");
       return;
@@ -364,6 +397,78 @@ const Form = () => {
   };
 
 
+  const startRecording = async (field) => {
+  try {
+    // Ask for mic permission
+    const permission = await Audio.requestPermissionsAsync();
+    if (!permission.granted) {
+      Alert.alert("Permission Required", "Microphone permission is needed.");
+      return;
+    }
+
+    await Audio.setAudioModeAsync({
+      allowsRecordingIOS: true,
+      playsInSilentModeIOS: true,
+    });
+
+    const { recording } = await Audio.Recording.createAsync(
+      Audio.RecordingOptionsPresets.HIGH_QUALITY
+    );
+
+    setRecording(recording);
+    setIsRecording(true);
+    setActiveMic(field); // which field is being recorded
+  } catch (error) {
+    console.log("Recording start error:", error);
+    Alert.alert("Error", "Could not start recording.");
+  }
+};
+
+const stopRecordingAndTranscribe = async () => {
+  try {
+    if (!recording) return;
+
+    setIsRecording(false);
+    setTranscribing(true);
+
+    await recording.stopAndUnloadAsync();
+    const uri = recording.getURI();
+    setRecording(null);
+
+    // Send audio to YOUR backend
+    const formData = new FormData();
+    formData.append("audio", {
+      uri,
+      type: "audio/wav",
+      name: "recording.wav",
+    });
+
+    const response = await postRequestFormData("/complaints/transcribe", formData);
+    const data = response.data;
+
+    
+
+    if (data.success) {
+      // Put text into the right field
+      if (activeMic === "diagnosis") {
+        setDiagnosis((previous) => (previous + " " + data.transcript).trim());
+      } else {
+        setActionTaken((previous) => (previous + " " + data.transcript).trim());
+      }
+    } else {
+      Alert.alert("Error", data.message || "Transcription failed.");
+    }
+
+  } catch (error) {
+    console.log("Transcription error:", error);
+    Alert.alert("Error", "Could not transcribe audio.");
+  } finally {
+    setTranscribing(false);
+    setActiveMic(null);
+  }
+};
+
+
   return (
   <SafeAreaView style={styles.safe}>
     <Header showProfile={true} />
@@ -372,6 +477,7 @@ const Form = () => {
       style={styles.scroll}
       showsVerticalScrollIndicator={false}
       keyboardShouldPersistTaps="handled"
+      keyboardDismissMode="on-drag" 
     >
       <View style={styles.titleRow}>
         <View>
@@ -411,10 +517,23 @@ const Form = () => {
       <View style={styles.fieldBlock}>
         <View style={styles.fieldHeader}>
           <Text style={styles.label}>
-            Diagnosis <Text style={styles.required}>*</Text>
+            {selectedLanguage === "mr" ? "निदान" : selectedLanguage === "hi" ? "निदान" : "Diagnosis"}
+            <Text style={styles.required}>*</Text>
           </Text>
-          <TouchableOpacity style={styles.micBtn} disabled={false}>
-            <Ionicons name="mic" size={16} color="#fff" />
+         <TouchableOpacity
+              style={[styles.micBtn, activeMic === "diagnosis" && { backgroundColor: "red" }]}
+              onPress={() => isRecording ? stopRecordingAndTranscribe() : startRecording("diagnosis")}
+              disabled={transcribing || (isRecording && activeMic !== "diagnosis")}
+            >
+              {transcribing && activeMic === "diagnosis" ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Ionicons
+                  name={isRecording && activeMic === "diagnosis" ? "stop" : "mic"}
+                  size={16}
+                  color="#fff"
+                />
+              )}
           </TouchableOpacity>
         </View>
         <TextInput
@@ -422,20 +541,41 @@ const Form = () => {
           placeholder={PLACEHOLDERS[selectedLanguage].diagnosis}
           placeholderTextColor="#aaa"
           multiline
-          maxLength={100}
+          maxLength={300}
           value={diagnosis}
           onChangeText={setDiagnosis}
+          onBlur={() => {
+            if (diagnosis.trim().length > 0 && diagnosis.trim().length < 100) {
+              Alert.alert("Too Short", `Diagnosis should be atleast 100 characters. `);
+            }
+          }}
         />
-        <Text style={styles.charCount}>{diagnosis.length}/100</Text>
+        <Text style={styles.charCount}>{diagnosis.length}/300</Text>
+        {diagnosis.length > 0 && diagnosis.length < 100 && (
+          <Text style={styles.hintText}>Minimum 100 characters required</Text>
+          )}
       </View>
 
       <View style={styles.fieldBlock}>
         <View style={styles.fieldHeader}>
           <Text style={styles.label}>
-            Action Taken <Text style={styles.required}>*</Text>
+            {selectedLanguage === "mr" ? "केलेली कारवाई" : selectedLanguage === "hi" ? "की गई कार्रवाई" : "Action Taken"}
+            <Text style={styles.required}>*</Text>
           </Text>
-          <TouchableOpacity style={styles.micBtn} disabled={false}>
-            <Ionicons name="mic" size={16} color="#fff" />
+          <TouchableOpacity
+              style={[styles.micBtn, activeMic === "action" && { backgroundColor: "red" }]}
+              onPress={() => isRecording ? stopRecordingAndTranscribe() : startRecording("action")}
+              disabled={transcribing || (isRecording && activeMic !== "action")}
+            >
+              {transcribing && activeMic === "action" ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Ionicons
+                  name={isRecording && activeMic === "action" ? "stop" : "mic"}
+                  size={16}
+                  color="#fff"
+                />
+              )}
           </TouchableOpacity>
         </View>
         <TextInput
@@ -443,11 +583,19 @@ const Form = () => {
           placeholder={PLACEHOLDERS[selectedLanguage].action}
           placeholderTextColor="#aaa"
           multiline
-          maxLength={100}
+          maxLength={300}
           value={actionTaken}
           onChangeText={setActionTaken}
+          onBlur={() => {
+            if (actionTaken.trim().length > 0 && actionTaken.trim().length < 100) {
+              Alert.alert("Too Short", `Action taken should be atleast 100 characters.`);
+            }
+          }}
         />
-        <Text style={styles.charCount}>{actionTaken.length}/100</Text>
+        <Text style={styles.charCount}>{actionTaken.length}/300</Text>
+        {actionTaken.length > 0 && actionTaken.length < 100 && (
+          <Text style={styles.hintText}>Minimum 100 characters required</Text>
+        )}
 
         <TouchableOpacity style={styles.cameraBtn} onPress={handleCamera}>
           <Ionicons name="camera" size={20} color={NAVY} />
@@ -457,9 +605,9 @@ const Form = () => {
           <View style={styles.uploadReadyBox}>
             <Text style={styles.uploadReadyText}>
               {photos.length === 1
-                ? `Image ready - ${formatSize(photos[0].size)}`
+                ? `File Size -${formatSize(photos[0].size)}`
                 : pdfUri
-                  ? `PDF ready - ${photos.length} photos`
+                  ? `File Size -${formatSize(pdfSize)}`
                   : `${photos.length} photos selected`}
             </Text>
             <TouchableOpacity style={styles.removePhoto} onPress={clearPhotos}>
@@ -502,36 +650,36 @@ const Form = () => {
         >
           <Text style={styles.dropdownBtnText}>
             {selectedStatus !== null
-              ? STATUS_OPTIONS.find((option) => option.value === selectedStatus)?.label
-              : "Select Status..."}
+             ? STATUS_OPTIONS.find((option) => option.value === selectedStatus)?.label
+                : "Select Status..."} 
           </Text>
           <Text style={styles.dropdownArrow}>{dropdownOpen ? "▲" : "▼"}</Text>
         </TouchableOpacity>
 
         {dropdownOpen && (
           <View style={styles.dropdownList}>
-            {STATUS_OPTIONS.map((option) => (
-              <TouchableOpacity
-                key={option.value}
-                style={[
-                  styles.dropdownOption,
-                  selectedStatus === option.value && styles.dropdownOptionActive,
-                ]}
-                onPress={() => {
-                  setSelectedStatus(option.value);
-                  setDropdownOpen(false);
-                }}
-              >
-                <Text
-                  style={[
-                    styles.dropdownOptionText,
-                    selectedStatus === option.value && styles.dropdownOptionTextActive,
-                  ]}
-                >
-                  {option.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
+            {STATUS_OPTIONS.map((option, index) => (
+                <TouchableOpacity
+                    key={option.value}
+                    style={[
+                      styles.dropdownOption,
+                      selectedStatus === option.value && styles.dropdownOptionActive,
+                    ]}
+                    onPress={() => {
+                      setSelectedStatus(option.value);
+                      setDropdownOpen(false);
+                    }}
+                  >
+                    <Text
+                      style={[
+                        styles.dropdownOptionText,
+                        selectedStatus === option.value && styles.dropdownOptionTextActive,
+                      ]}
+                    >
+                      {option.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
           </View>
         )}
       </View>
@@ -549,7 +697,7 @@ const Form = () => {
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-        <Text style={styles.backBtnText}>GO BACK</Text>
+        <Text style={styles.backBtnText}>← GO BACK</Text>
       </TouchableOpacity>
 
       <View style={styles.bottomSpace} />
@@ -557,7 +705,7 @@ const Form = () => {
 
     {showCamera && (
       <View style={StyleSheet.absoluteFillObject}>
-        <CameraView style={styles.cameraView} ref={cameraRef} facing="back" />
+        <CameraView style={styles.cameraView} ref={cameraRef} facing="back" mute={true} />
 
         <View style={styles.cameraTopBar}>
           <View style={styles.photoCountBadge}>
@@ -575,7 +723,9 @@ const Form = () => {
           >
             {photos.map((photo, index) => (
               <View key={`${photo.uri}-${index}`} style={styles.thumbnailWrapper}>
-                <Image source={{ uri: photo.uri }} style={styles.thumbnail} />
+                <TouchableOpacity onPress={() => { setPreviewIndex(index); setPreviewVisible(true); }}>
+                  <Image source={{ uri: photo.uri }} style={styles.thumbnail} />
+                </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.thumbnailRemove}
                   onPress={() => removePhoto(index)}
@@ -612,6 +762,60 @@ const Form = () => {
         </View>
       </View>
     )}
+
+  {/* ── Full Screen Preview Modal ── */}
+<Modal
+  visible={previewVisible}
+  transparent={true}
+  animationType="fade"
+  onRequestClose={() => setPreviewVisible(false)}
+>
+  <View style={styles.previewOverlay}>
+
+    {/* Close Button */}
+    <TouchableOpacity
+      style={styles.previewClose}
+      onPress={() => setPreviewVisible(false)}
+    >
+      <Ionicons name="close" size={28} color="#fff" />
+    </TouchableOpacity>
+
+    {/* Photo Counter */}
+    <Text style={styles.previewCounter}>
+      {previewIndex + 1} / {photos.length}
+    </Text>
+
+    {/* Main Image */}
+    <Image
+      source={{ uri: photos[previewIndex]?.uri }}
+      style={styles.previewImage}
+      resizeMode="contain"
+    />
+
+    {/* Prev / Next Arrows */}
+    {photos.length > 1 && (
+      <View style={styles.previewNavRow}>
+        <TouchableOpacity
+          style={[styles.previewNavBtn, previewIndex === 0 && { opacity: 0.3 }]}
+          onPress={() => setPreviewIndex((i) => Math.max(0, i - 1))}
+          disabled={previewIndex === 0}
+        >
+          <Ionicons name="chevron-back" size={28} color="#fff" />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.previewNavBtn, previewIndex === photos.length - 1 && { opacity: 0.3 }]}
+          onPress={() => setPreviewIndex((i) => Math.min(photos.length - 1, i + 1))}
+          disabled={previewIndex === photos.length - 1}
+        >
+          <Ionicons name="chevron-forward" size={28} color="#fff" />
+        </TouchableOpacity>
+      </View>
+    )}
+
+  </View>
+</Modal>
+
 
   </SafeAreaView>
 );
@@ -675,6 +879,11 @@ const styles = StyleSheet.create({
     width: 1,
     backgroundColor: NAVY,
   },
+  hintText: {
+  fontSize: 11,
+  color: "#c0392b",
+  marginTop: 3,
+},
   fieldBlock: {
     marginHorizontal: 16,
     marginBottom: 16,
@@ -726,6 +935,45 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
   },
+  previewOverlay: {
+  flex: 1,
+  backgroundColor: "rgba(0,0,0,0.95)",
+  alignItems: "center",
+  justifyContent: "center",
+},
+previewClose: {
+  position: "absolute",
+  top: 50,
+  right: 20,
+  zIndex: 10,
+  backgroundColor: "rgba(255,255,255,0.15)",
+  borderRadius: 20,
+  padding: 8,
+},
+previewCounter: {
+  position: "absolute",
+  top: 58,
+  alignSelf: "center",
+  color: "#fff",
+  fontWeight: "700",
+  fontSize: 15,
+  zIndex: 10,
+},
+previewImage: {
+  width: "100%",
+  height: "80%",
+},
+previewNavRow: {
+  position: "absolute",
+  bottom: 60,
+  flexDirection: "row",
+  gap: 40,
+},
+previewNavBtn: {
+  backgroundColor: "rgba(255,255,255,0.2)",
+  borderRadius: 30,
+  padding: 12,
+},
   micText: {
     color: "#fff",
     fontSize: 11,
@@ -733,6 +981,12 @@ const styles = StyleSheet.create({
   },
   disabledButton: {
     opacity: 0.6,
+  },
+  cameraTopBar: {
+  position: "absolute",
+  top: 50,
+  width: "100%",
+  alignItems: "center",
   },
   cameraBtn: {
     marginTop: 12,
@@ -763,6 +1017,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     paddingHorizontal: 10,
     paddingVertical: 5,
+    marginLeft: "auto",
   },
   removePhotoText: {
     color: "#c0392b",
@@ -952,5 +1207,4 @@ const styles = StyleSheet.create({
   
  
 });
-
 export default Form;

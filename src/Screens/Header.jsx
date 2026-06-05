@@ -1,6 +1,7 @@
 import { useNavigation } from "@react-navigation/native";
 import { useEffect, useRef, useState } from "react";
 import {
+  Alert,
   Animated,
   Image,
   StyleSheet,
@@ -52,14 +53,29 @@ useEffect(() => {
     }
   };
 
-  const handleLogout = async () => {
-    try {
-      await clearStorage();
-      navigation.replace("Login");
-    } catch (error) {
-      console.log("Logout Error:", error);
-    }
-  };
+ const handleLogout = async () => {
+  Alert.alert(
+    "Logout",
+    "You will be logged out.",
+    [
+      {
+        text: "Cancel",
+        style: "cancel",  // ✅ dismisses the alert, does nothing
+      },
+      {
+        text: "OK",
+        onPress: async () => {
+          try {
+            await clearStorage();
+            navigation.replace("Login");
+          } catch (error) {
+            console.log("Logout Error:", error);
+          }
+        },
+      },
+    ]
+  );
+};
 
   // ── Called when a dropdown menu item is tapped ──
   const handleMenuItemPress = (section) => {
@@ -78,8 +94,8 @@ useEffect(() => {
           navigation.navigate("IssuedItems");
         } else if (section === "transactions") {
           navigation.navigate("Transactions");
-        // } else if (section === "troubleshooting") {
-        //   navigation.navigate("Troubleshooting");
+        } else if (section === "troubleshooting") {
+          navigation.navigate("Troubleshooting");
         } else if (onMenuSelect) {
           onMenuSelect(section);
         } 
@@ -170,13 +186,13 @@ useEffect(() => {
             
 
           {/* Troubleshooting */}
-            {/* <TouchableOpacity
+            <TouchableOpacity
               style={styles.dropdownItem}
               onPress={() => handleMenuItemPress("troubleshooting")}
             >
               <Text style={styles.dropdownIcon}>🔧</Text>
               <Text style={styles.dropdownItemText}>Troubleshooting</Text>
-            </TouchableOpacity> */}
+            </TouchableOpacity> 
 
             <View style={styles.dropdownDivider} />
 

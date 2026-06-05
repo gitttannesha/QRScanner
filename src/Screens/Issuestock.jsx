@@ -8,7 +8,6 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { getRequest } from "../services/authservice";
 import Header from './Header';
 const BLUE = "#2f5081";
@@ -41,9 +40,9 @@ const IssuedItemsScreen = ({ navigation }) => {
 
   if (loading) {
     return (
-      <SafeAreaView style={[styles.safe, { justifyContent: "center", alignItems: "center" }]}>
+      <View style={[styles.safe, { justifyContent: "center", alignItems: "center" }]}>
         <ActivityIndicator size="large" color={BLUE} />
-      </SafeAreaView>
+      </View>
     );
   }
 
@@ -66,7 +65,7 @@ const IssuedItemsScreen = ({ navigation }) => {
 
   return (
      
-    <SafeAreaView style={styles.safe}>
+    <View style={styles.safe}>
       <StatusBar barStyle="light-content" backgroundColor={DARK_BLUE} />
       <Header showProfile={true}   userName={userName}/>
 
@@ -142,7 +141,7 @@ const IssuedItemsScreen = ({ navigation }) => {
           <Text style={styles.backBtnText}>← GO BACK </Text>
         </TouchableOpacity>
       </ScrollView>
-    </SafeAreaView>
+    </View>
     
   );
 };

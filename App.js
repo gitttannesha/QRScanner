@@ -13,7 +13,7 @@ import LoginScreen from './src/Screens/Login';
 import ScannerScreen from './src/Screens/Scanner';
 import SparePartDetails from './src/Screens/SparePartDetails';
 import TransactionsScreen from './src/Screens/Transaction';
-// import Troubleshooting from './src/Screens/Troubleshooting';
+import Troubleshooting from './src/Screens/Troubleshooting';
 import { getRequest } from './src/services/authservice';
 import { logError } from './src/utilis/errorLogger';
 import { getToken } from './src/utilis/storage';
@@ -84,7 +84,7 @@ export default function App() {
           <Stack.Screen name="Dashboard" component={Dashboard} />
           <Stack.Screen name="Scanner" component={ScannerScreen} />
           <Stack.Screen name="ChemicalDetails" component={ChemicalDetails} />
-          {/* <Stack.Screen name="Troubleshooting" component={Troubleshooting} /> */}
+          <Stack.Screen name="Troubleshooting" component={Troubleshooting} /> 
           <Stack.Screen name="Form" component={Form} />
           <Stack.Screen name="ConsumableDetails" component={ConsumableDetails} />
           <Stack.Screen name="SparePartDetails" component={SparePartDetails} />
