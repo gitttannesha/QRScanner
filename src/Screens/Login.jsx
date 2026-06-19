@@ -81,12 +81,6 @@ const LoginScreen = () => {
 }
 
 
-//   const loginLimiter = rateLimit({
-//   windowMs: 60 * 60 * 1000, // 1 hr
-//   max: 5,
-//   message: { error: "5 login attempts done. Please try again after 1 hr." },
-// });
-
 router.post("/login", loginLimiter, loginHandler);
 
 
@@ -106,7 +100,7 @@ router.post("/login", loginLimiter, loginHandler);
 
       <SafeAreaView style={styles.container}>
         <View style={styles.card}>
-          <Text style={styles.title}>QR INVENTORY APP</Text>
+          <Text style={styles.title}>IITBNF APP</Text>
 
           <View style={styles.qrContainer}>
             <MaterialIcons name="qr-code-scanner" size={60} color="#333" />

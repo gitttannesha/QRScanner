@@ -98,7 +98,7 @@ const isValidQuantity = (value) => {
       });
       if (response.data.success) {
         Alert.alert("Success", `Stock updated! New stock: ${response.data.new_stock}`);
-        setCurrentStock(response.data.new_stock);
+        setCurrentStock(parseFloat(parseFloat(response.data.new_stock).toFixed(2)));
         setAmount("");
         //setComment("");
       }
@@ -130,7 +130,7 @@ const isValidQuantity = (value) => {
       });
       if (response.data.success) {
         Alert.alert("Success", `Stock set to ${response.data.new_stock}`);
-        setCurrentStock(response.data.new_stock);
+        setCurrentStock(parseFloat(parseFloat(response.data.new_stock).toFixed(2)));        
         setAmount("");
         setComment("");
       }

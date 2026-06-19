@@ -72,7 +72,7 @@ const ScannerScreen = ({ navigation }) => {
         if (dataJson.success) {
           navigation.navigate("ChemicalDetails", { chemical: dataJson.data });
         } else {
-          Alert.alert("Not Found", "This chemical ID does not exist in our database.");
+          Alert.alert("Not Found", "This Item does not exist in our database.");
           setStatusText("Align QR code within the frame");
           setScanned(false);
         }
@@ -87,7 +87,7 @@ const ScannerScreen = ({ navigation }) => {
             consumable: { ...dataJson.data, table: "one_time_master_new" }
           });
         } else {
-          Alert.alert("Not Found", "This item does not exist in our database.");
+          Alert.alert("Not Found", "This Item does not exist in our database.");
           setStatusText("Align QR code within the frame");
           setScanned(false);
         }
@@ -102,7 +102,7 @@ const ScannerScreen = ({ navigation }) => {
             consumable: { ...dataJson.data, table: "reusables_master_new" }
           });
         } else {
-          Alert.alert("Not Found", "This item does not exist in our database.");
+          Alert.alert("Not Found", "This Item does not exist in our database.");
           setStatusText("Align QR code within the frame");
           setScanned(false);
         }
@@ -116,7 +116,7 @@ const ScannerScreen = ({ navigation }) => {
         if (dataJson.success) {
           navigation.navigate("SparePartDetails", { sparePart: dataJson.data });
         } else {
-          Alert.alert("Not Found", "This spare part does not exist in our database.");
+          Alert.alert("Not Found", "This Item does not exist in our database.");
           setStatusText("Align QR code within the frame");
           setScanned(false);
         }

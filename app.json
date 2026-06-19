@@ -9,7 +9,6 @@
     "scheme": "qrscanner",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-
     "runtimeVersion": {
       "policy": "sdkVersion"
     },
@@ -18,14 +17,12 @@
       "enabled": true,
       "checkAutomatically": "ON_LOAD"
     },
-
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "minSdkVersion": 21,
       "package": "com.annesha.QRScanner",
-      
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./src/assets/icon.png"
@@ -60,7 +57,9 @@
         }
       ],
       "@react-native-community/datetimepicker",
-      "expo-audio"
+      "expo-audio",
+      "expo-font",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,

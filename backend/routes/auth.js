@@ -10,7 +10,7 @@ const SECRET_KEY = process.env.SECRET_KEY;
 
 // POST /login
 router.post("/login", (req, res) => {
-	
+
   const { email, password } = req.body;
   const hashedPassword = md5(password);
 
@@ -22,7 +22,6 @@ router.post("/login", (req, res) => {
       return res.status(500).json({ success: false, error: "Internal Server Error" });
     }
 
-    // Email not found
     if (result.length === 0) {
       return res.status(401).json({ success: false, message: "Incorrect Email. Email not found." });
     }
@@ -33,7 +32,7 @@ router.post("/login", (req, res) => {
     if (user.expiry_date) {
       const expiry = new Date(user.expiry_date);
       const today = new Date();
-      today.setHours(0, 0, 0, 0); // compare dates only, ignore time
+      today.setHours(0, 0, 0, 0);
 
       if (today > expiry) {
         return res.status(401).json({ success: false, message: "Your credentials have expired." });
@@ -45,21 +44,28 @@ router.post("/login", (req, res) => {
       return res.status(401).json({ success: false, message: "Incorrect password." });
     }
 
-    // Login success — log the session
-    const sessionExpiry = new Date(Date.now() + 60 * 60 * 1000);
-    const logSql = "INSERT INTO app_login_logs (memberid, email, session_expires) VALUES (?, ?, ?)";
-    pool.query(logSql, [user.memberid, user.email, sessionExpiry], (logErr) => {
-      if (logErr) console.error("Audit Log Error:", logErr.message);
+    // ✅ Combine fname + lname
+    const fullName = `${user.fname} ${user.lname}`;
+
+    // ✅ Session expiry (15 days to match JWT)
+    const sessionExpiry = new Date(Date.now() + 15 * 24 * 60 * 60 * 1000);
+
+    // ✅ Log into App_activity
+    const activitySql = "INSERT INTO app_activity (member_id, name, email, session_expiry) VALUES (?, ?, ?, ?)";
+    pool.query(activitySql, [user.memberid, fullName, user.email, sessionExpiry], (logErr) => {
+      if (logErr) console.error("App_activity Log Error:", logErr.message);
     });
 
     delete user.password;
-    delete user.expiry_date; 
+    delete user.expiry_date;
 
     const token = jwt.sign({ id: user.memberid, email: user.email }, SECRET_KEY, { expiresIn: "15d" });
     res.json({ success: true, token, user });
   });
 });
+
 router.get("/verify-token", verifyToken, (req, res) => {
   return res.status(200).json({ success: true, user: req.user });
 });
+
 module.exports = router;

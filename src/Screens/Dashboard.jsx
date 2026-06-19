@@ -74,7 +74,7 @@ const Dashboard = () => {
 
       {/* ── Body ── */}
       <View style={styles.body}>
-        <Text style={styles.welcomeText}> Hi, {userName}!👋 {'\n'} Welcome to the IITBNF Inventory{'\n'} App</Text>
+        <Text style={styles.welcomeText}> Hi, {userName}!👋 {'\n'} Welcome to the IITBNF App</Text>
 
         <View style={styles.qrCard}>
           <Image
@@ -91,7 +91,7 @@ const Dashboard = () => {
       </View>
 
       <View style={[styles.footer , { bottom: insets.bottom + 30 }]}>
-      <Text style={styles.versionText}>IITBNF Inventory App • v2.0.0</Text>
+      <Text style={styles.versionText}>IITBNF App • v3.0.0</Text>
         <TouchableOpacity onPress={() => Linking.openURL('https://www.iitbnf.iitb.ac.in/iitbnf/it-team/it-team.php')}>
         <Text style={styles.linkText}>IITBNF</Text>
         </TouchableOpacity>

@@ -344,10 +344,6 @@ const formatDate = (dateStr) => {
                 <Text style={styles.label}>Date of Procurement</Text>
                 <Text style={styles.value}>{formatDate(sparePart.date_procurement)}</Text>
               </View>
-              <View style={styles.detailRow}>
-                <Text style={styles.label}>Manual</Text>
-                <Text style={styles.value}>{sparePart.manual || "N/A"}</Text>
-              </View>
             </>
           )}
         </View>

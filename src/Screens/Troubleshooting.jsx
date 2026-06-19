@@ -1,7 +1,8 @@
-import { useFocusEffect, useNavigation } from "@react-navigation/native";
-import { useCallback, useState } from "react";
+import { useFocusEffect, useNavigation, useRoute } from "@react-navigation/native";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Animated,
   FlatList,
   RefreshControl,
   StyleSheet,
@@ -31,101 +32,75 @@ const STATUS_COLOR = {
   3: { bg: "#F8D7DA", text: "#721C24" },
 };
 
-const TYPE_MAP = {
-  1: "Equipment",
-  2: "Facility",
-  3: "Safety",
-  4: "Process",
-  5: "HR",
-  6: "IT",
-  7: "Purchase",
-  8: "Training",
-  9: "Inventory",
-  10: "Admin",
+
+const formatDate = (value) => {
+  if (!value) return "-";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "-";
+  return date.toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 };
-
-const MACHINE_MAP = {
-  5: {
-    1: "Appointment Related",
-    2: "Leave Related",
-    3: "Salary Related",
-    4: "Miscellaneous",
-    5: "FOC Agenda",
-  },
-  6: {
-    1: "Hardware Related",
-    2: "Software Related",
-    3: "Miscellaneous",
-    4: "FOC Agenda",
-  },
-  7: {
-    1: "Tracking",
-    2: "Purchase Return",
-    3: "Shipment",
-    4: "Miscellaneous",
-    5: "FOC Agenda",
-  },
-  8: {
-    1: "New Training",
-    2: "Training Pending",
-    3: "Miscellaneous",
-    4: "FOC Agenda",
-  },
-  9: {
-    1: "Issue of Material",
-    2: "New Material",
-    3: "Miscellaneous",
-    4: "FOC Agenda",
-  },
-  10: {
-    1: "IITBNF",
-    2: "Faculty Projects",
-    3: "Main Building/Institutes",
-  },
-};
-
-
 
 const formatDateTime = (value) => {
-  if (!value) return "-";
-
+  if (!value) return "Not visited yet";
   const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return "-";
-  }
-
+  if (Number.isNaN(date.getTime())) return "Not visited yet";
   const formattedDate = date.toLocaleDateString("en-IN", {
     day: "2-digit",
     month: "short",
     year: "numeric",
   });
-
   const formattedTime = date.toLocaleTimeString("en-IN", {
     hour: "2-digit",
     minute: "2-digit",
     hour12: true,
   });
-
   return `${formattedDate}  ${formattedTime}`;
 };
 
 
-const ComplaintCard = ({ item }) => {
+
+const ComplaintCard = ({ item, highlightId,typeMap, machineMap }) => {
   const navigation = useNavigation();
+    const glowAnim = useRef(new Animated.Value(0)).current;
+    const isHighlighted = String(item.complaint_id) === String(highlightId);
+
+    useEffect(() => {
+      if (isHighlighted) {
+        Animated.sequence([
+          Animated.timing(glowAnim, { toValue: 1, duration: 400, useNativeDriver: false }),
+          Animated.delay(1200),
+          Animated.timing(glowAnim, { toValue: 0, duration: 800, useNativeDriver: false }),
+        ]).start();
+      }
+    }, [isHighlighted]);
+
+    const borderColor = glowAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["#e0e6f0", AMBER],
+  });
+
+  const backgroundColor = glowAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["#ffffff", "#fffbf0"],
+  });
 
   const statusStyle = STATUS_COLOR[Number(item.status)] || {
     bg: "#eee",
     text: "#333",
   };
 
-  const type = TYPE_MAP[Number(item.type)] || item.type;
-  const machine =
-    MACHINE_MAP[Number(item.type)]?.[Number(item.machine_id)] ||
-    String(item.machine_id || "-");
+const type = typeMap[String(item.type)] || `N/A (${item.type})`;
+const machine =
+  machineMap[String(item.type)]?.[String(item.machine_id)] ||
+  (item.machine_id ? `N/A (${item.machine_id})` : "-");
+
 
   return (
-    <View style={styles.card}>
+    <Animated.View style={[styles.card, {borderColor , backgroundColor}]}>
       <View style={styles.chipsRow}>
         <View style={styles.idCircle}>
           <Text style={styles.circleValue}>{item.complaint_id}</Text>
@@ -133,7 +108,7 @@ const ComplaintCard = ({ item }) => {
 
         <View style={styles.chip}>
           <Text style={styles.rectValue}>
-            {formatDateTime(item.time_of_complaint)}
+            {formatDate(item.time_of_complaint)}
           </Text>
         </View>
 
@@ -142,7 +117,7 @@ const ComplaintCard = ({ item }) => {
         </View>
 
         <View style={styles.chip}>
-          <Text style={styles.chipLabel}>Tool/Category</Text>
+          {/* <Text style={styles.chipLabel}>Tool/Category</Text> */}
           <Text style={styles.chipValue}>{machine}</Text>
         </View>
 
@@ -166,16 +141,20 @@ const ComplaintCard = ({ item }) => {
       <Text style={styles.descText}>
         {item.complaint_description || "No description provided."}
       </Text>
+<View style={styles.cardBottom}>
+  <View style={styles.lastVisitedBox}>
+    <Text style={styles.lastVisitedLabel}>Last Visited</Text>
+    <Text style={styles.lastVisitedValue}>{formatDateTime(item.last_visited)}</Text>
+  </View>
 
-      <View style={styles.actionContainer}>
-        <TouchableOpacity
-          style={styles.actionBtn}
-          onPress={() => navigation.navigate("Form", { complaint: item })}
-        >
-          <Text style={styles.actionBtnText}>Action Taken</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+  <TouchableOpacity
+    style={styles.actionBtn}
+    onPress={() => navigation.navigate("Form", { complaint: item })}
+  >
+    <Text style={styles.actionBtnText}>Action Taken</Text>
+  </TouchableOpacity>
+</View>
+    </Animated.View>
   );
 };
 
@@ -185,8 +164,29 @@ const Troubleshooting = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState("complaint"); 
+  const [typeMap, setTypeMap] = useState({});
+  const [machineMap, setMachineMap] = useState({});
+  const flatListRef = useRef(null);
 
+  const route = useRoute();
+  const highlightId = route?.params?.highlightId;
+
+  useEffect(() => {
+  if (!highlightId || complaints.length === 0) return;
+
+  const index = filteredComplaints.findIndex(
+    (c) => String(c.complaint_id) === String(highlightId)
+  );
+
+  if (index !== -1) {
+    setTimeout(() => {
+      flatListRef.current?.scrollToIndex({ index, animated: true, viewPosition: 0.3 });
+    }, 400); // small delay lets FlatList render first
+  }
+}, [highlightId, complaints]);
   
+
   const onRefresh = async () => {
   setRefreshing(true);
   try {
@@ -197,6 +197,19 @@ const Troubleshooting = ({ navigation }) => {
     setRefreshing(false);
   }
 };
+
+const loadMaps = useCallback(async () => {
+  try {
+    const response = await getRequest("/complaint-maps");
+    if (response.data.success) {
+      setTypeMap(response.data.maps.TYPE_MAP);
+      setMachineMap(response.data.maps.MACHINE_MAP);
+    }
+  } catch (error) {
+    console.log("Maps fetch error:", error);
+  }
+}, []);
+
 
   const loadComplaints = useCallback(async () => {
     setLoading(true);
@@ -234,7 +247,8 @@ const Troubleshooting = ({ navigation }) => {
   useFocusEffect(
     useCallback(() => {
       loadComplaints();
-    }, [loadComplaints])
+      loadMaps();
+    }, [loadComplaints,loadMaps])
   );
 
   if (loading) {
@@ -253,11 +267,22 @@ const Troubleshooting = ({ navigation }) => {
     ? `${user.fname || ""} ${user.lname || ""}`.trim()
     : "";
 
-  const filteredComplaints = complaints.filter((complaint) =>
-    (complaint.complaint_by_name || "")
+
+  const tabFiltered = complaints.filter((c) =>
+  activeTab === "scheduler"
+    ? Number(c.scheduler) === 1
+    : Number(c.scheduler) === 0
+   );
+
+  const filteredComplaints = tabFiltered.filter((c) =>
+    (c.complaint_by_name || "")
       .toLowerCase()
       .includes(searchQuery.toLowerCase())
     );
+
+  const schedulerCount = complaints.filter((c) => Number(c.scheduler) === 1).length;
+  const complaintCount = complaints.filter((c) => Number(c.scheduler) === 0).length;
+
   return (
     <View style={styles.safe}>
       <Header showProfile={true} />
@@ -265,6 +290,12 @@ const Troubleshooting = ({ navigation }) => {
   
 
       <FlatList
+      ref={flatListRef}                        
+      onScrollToIndexFailed={(info) => {       
+        setTimeout(() => {
+          flatListRef.current?.scrollToIndex({ index: info.index, animated: true });
+        }, 500);
+      }} 
         data={filteredComplaints}
         refreshControl={
         <RefreshControl
@@ -298,6 +329,29 @@ const Troubleshooting = ({ navigation }) => {
               <Text style={styles.countLabel}>COMPLAINTS/TASKS ASSIGNED</Text>
             </View>
 
+           
+             <View style={styles.toggleWrapper}>
+  <TouchableOpacity
+    style={[styles.toggleBtn, activeTab === "complaint" && styles.toggleBtnActive]}
+    onPress={() => { setActiveTab("complaint"); setSearchQuery(""); }}
+  >
+    <Text style={[styles.toggleBtnText, activeTab === "complaint" && styles.toggleBtnTextActive]}>
+      Complaint  {complaintCount}
+    </Text>
+  </TouchableOpacity>
+
+  <TouchableOpacity
+    style={[styles.toggleBtn, activeTab === "scheduler" && styles.toggleBtnActive]}
+    onPress={() => { setActiveTab("scheduler"); setSearchQuery(""); }}
+  >
+    <Text style={[styles.toggleBtnText, activeTab === "scheduler" && styles.toggleBtnTextActive]}>
+      Scheduler  {schedulerCount}
+    </Text>
+  </TouchableOpacity>
+</View>
+
+
+
             <View style={styles.searchBox}>
               <TextInput
                 style={styles.searchInput}
@@ -314,7 +368,7 @@ const Troubleshooting = ({ navigation }) => {
             </View>
           </>
         }
-        renderItem={({ item }) => <ComplaintCard item={item} />}
+        renderItem={({ item }) => <ComplaintCard item={item}  highlightId={highlightId} typeMap={typeMap} machineMap={machineMap} />}
         ListEmptyComponent={
           <View style={styles.emptyBox}>
             <Text style={styles.emptyText}>No complaints assigned to you.</Text>
@@ -370,6 +424,11 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: "#3C3489",
   },
+  highlightedCard: {
+  borderColor: AMBER,
+  borderWidth: 2,
+  backgroundColor: "#fffbf0",
+},
   userInfo: {
     flex: 1,
   },
@@ -473,6 +532,34 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "700",
   },
+
+toggleWrapper: {
+  flexDirection: "row",
+  marginHorizontal: 16,
+  marginBottom: 14,
+  backgroundColor: "#E8EDF5",
+  borderRadius: 25,
+  padding: 3,
+},
+toggleBtn: {
+  flex: 1,
+  paddingVertical: 9,
+  borderRadius: 22,
+  alignItems: "center",
+},
+toggleBtnActive: {
+  backgroundColor: NAVY,
+  elevation: 2,
+},
+toggleBtnText: {
+  fontSize: 13,
+  fontWeight: "600",
+  color: "#888",
+},
+toggleBtnTextActive: {
+  color: AMBER,
+},
+
   divider: {
     height: 1,
     backgroundColor: "#E8EDF5",
@@ -542,11 +629,35 @@ searchInput: {
   fontSize: 14,
   color: "#333",
 },
+cardBottom: {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "space-between",
+  marginTop: 4,
+},
+lastVisitedBox: {
+  flex: 1,
+  marginRight: 12,
+},
+lastVisitedLabel: {
+  fontSize: 10,
+  color: "#888",
+  fontWeight: "600",
+  textTransform: "uppercase",
+  letterSpacing: 0.5,
+  marginBottom: 2,
+},
+lastVisitedValue: {
+  fontSize: 12,
+  color: NAVY,
+  fontWeight: "600",
+},
 clearBtn: {
   fontSize: 16,
   color: "#aaa",
   paddingLeft: 8,
 },
+
 });
 
 export default Troubleshooting;
